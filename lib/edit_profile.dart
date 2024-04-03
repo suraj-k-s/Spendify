@@ -8,9 +8,9 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:spendify/dashboard_screen.dart';
 
 class EditProfile extends StatefulWidget {
-  final String? childId;
+  final String? userId;
 
-  const EditProfile({Key? key, required this.childId}) : super(key: key);
+  const EditProfile({Key? key, required this.userId}) : super(key: key);
 
   @override
   State<EditProfile> createState() => _EditProfileState();
@@ -41,9 +41,9 @@ class _EditProfileState extends State<EditProfile> {
   }
 
   void updateProfile() async {
-    if (widget.childId != null) {
+    if (widget.userId != null) {
       final userDoc =
-          FirebaseFirestore.instance.collection('child').doc(widget.childId);
+          FirebaseFirestore.instance.collection('users').doc(widget.userId);
 
       // Check if any data has changed
       if (nameController.text != name ||
@@ -72,7 +72,7 @@ class _EditProfileState extends State<EditProfile> {
             final storage = FirebaseStorage.instance;
             final Reference storageRef = storage
                 .ref()
-                .child('user_profile_images/${widget.childId}.jpg');
+                .child('user_profile_images/${widget.userId}.jpg');
             final UploadTask uploadTask =
                 storageRef.putFile(File(_selectedImage!.path));
 
@@ -108,10 +108,10 @@ class _EditProfileState extends State<EditProfile> {
   }
 
   void loadChildData() async {
-    if (widget.childId != "") {
+    if (widget.userId != "") {
       try {
         final userDoc =
-            FirebaseFirestore.instance.collection('child').doc(widget.childId);
+            FirebaseFirestore.instance.collection('child').doc(widget.userId);
         final documentSnapshot = await userDoc.get();
 
         if (documentSnapshot.exists) {
@@ -156,10 +156,10 @@ class _EditProfileState extends State<EditProfile> {
   }
 
   void deleteChild() async {
-    if (widget.childId != null) {
+    if (widget.userId != null) {
       try {
         final userDoc =
-            FirebaseFirestore.instance.collection('child').doc(widget.childId);
+            FirebaseFirestore.instance.collection('child').doc(widget.userId);
 
         await userDoc.delete();
 
