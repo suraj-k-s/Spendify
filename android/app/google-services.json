@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "272172775888",
+    "project_id": "spendify-2024",
+    "storage_bucket": "spendify-2024.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:272172775888:android:f48290ef94e161806a61d5",
+        "android_client_info": {
+          "package_name": "com.example.spendify"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbk9nM3tBmASB2xUL485s8ctG4tV8QDjI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
