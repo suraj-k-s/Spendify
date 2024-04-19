@@ -1,6 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spendify/about.dart';
 import 'package:spendify/analysis.dart';
 import 'package:spendify/backuprestore.dart';
@@ -10,6 +9,7 @@ import 'package:spendify/feedback.dart';
 import 'package:spendify/help.dart';
 import 'package:spendify/homepage.dart';
 import 'package:spendify/calculator.dart';
+import 'package:spendify/login_screen.dart';
 import 'package:spendify/myaccount.dart';
 import 'package:spendify/settings.dart';
 
@@ -28,12 +28,25 @@ class _DashBoardState extends State<DashBoard> {
     const Budget(),
     const Categories()
   ];
+
+  void _logout() async {
+    // Clear saved data
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.clear(); // This will remove all key-value pairs
+
+    // Navigate to the login screen
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => LoginScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        iconTheme: IconThemeData(color: Colors.white),
-        backgroundColor: Color.fromARGB(255, 67, 1, 49),
+        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor: const Color.fromARGB(255, 67, 1, 49),
         actions: [IconButton(onPressed: () {}, icon: const Icon(Icons.search))],
         title: const Text(
           'Spendify',
@@ -45,15 +58,15 @@ class _DashBoardState extends State<DashBoard> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => Calenders(),
+              builder: (context) => const Calenders(),
             ),
           );
         },
-        child: Icon(
+        backgroundColor: const Color.fromARGB(255, 137, 90, 145),
+        child: const Icon(
           Icons.add,
           color: Colors.white,
         ),
-        backgroundColor: Color.fromARGB(255, 137, 90, 145),
       ),
       drawer: Drawer(
         child: ListView(
@@ -68,7 +81,7 @@ class _DashBoardState extends State<DashBoard> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => Myaccount(),
+                      builder: (context) => const Myaccount(),
                     ));
               },
             ),
@@ -78,7 +91,7 @@ class _DashBoardState extends State<DashBoard> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => SettingsScreen(),
+                      builder: (context) => const SettingsScreen(),
                     ));
               },
             ),
@@ -88,7 +101,7 @@ class _DashBoardState extends State<DashBoard> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => About(),
+                      builder: (context) => const About(),
                     ));
               },
             ),
@@ -98,7 +111,7 @@ class _DashBoardState extends State<DashBoard> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => BackupRestore(),
+                      builder: (context) => const BackupRestore(),
                     ));
               },
             ),
@@ -108,7 +121,7 @@ class _DashBoardState extends State<DashBoard> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => FeedbackPage(),
+                      builder: (context) => const FeedbackPage(),
                     ));
               },
             ),
@@ -118,13 +131,15 @@ class _DashBoardState extends State<DashBoard> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => Help(),
+                      builder: (context) => const Help(),
                     ));
               },
             ),
             ListTile(
               title: const Text("Logout"),
-              onTap: () {},
+              onTap: () {
+                _logout();
+              },
             ),
           ],
         ),
@@ -133,7 +148,7 @@ class _DashBoardState extends State<DashBoard> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         unselectedItemColor: Colors.grey[800], // Set the unselected item color
-        selectedItemColor: Color.fromARGB(255, 67, 1, 49),
+        selectedItemColor: const Color.fromARGB(255, 67, 1, 49),
         onTap: (index) {
           setState(() {
             _currentIndex = index;

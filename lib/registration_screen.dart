@@ -1,9 +1,12 @@
+// ignore_for_file: use_build_context_synchronously, avoid_print, unused_element
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:spendify/data/categoryData.dart';
 import 'package:spendify/login_screen.dart';
 import 'dart:io';
 import 'package:spendify/main.dart';
@@ -109,6 +112,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       });
 
       await _uploadImage(userId);
+      await _storeCategory(userId);
     } catch (e) {
       print("Error storing user data: $e");
       // Handle error, show message or take appropriate action
@@ -138,6 +142,25 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     }
   }
 
+  Future<void> _storeCategory(userId) async {
+    final firestore = FirebaseFirestore.instance;
+    final categoriesCollection = firestore.collection('categories');
+
+    try {
+      for (var category in categoryData) {
+        await categoriesCollection.add({
+          'userId': userId,
+          'name': category['name'],
+          'icon': category['icon'].codePoint,
+          'type': category['type'],
+        });
+      }
+      print('Categories inserted successfully for user $userId');
+    } catch (e) {
+      print('Error inserting categories: $e');
+    }
+  }
+
   String? _validateName(String? value) {
     if (value == null || value.isEmpty) {
       return 'Please enter a valid name';
@@ -155,15 +178,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     return null;
   }
 
-  String? _validateDateOfBirth(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Please select your date of birth';
-    }
-
-    // Additional validation logic can be added if needed
-
-    return null;
-  }
 
   String? _validatePrefix(String? value) {
     if (value == null || value.isEmpty) {

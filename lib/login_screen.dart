@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:spendify/dashboard_screen.dart';
 import 'package:spendify/main.dart';
@@ -16,8 +18,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  TextEditingController _emailController = TextEditingController();
-  TextEditingController _passController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool check = false;
   bool _obscureText = true;
@@ -73,7 +75,6 @@ class _LoginScreenState extends State<LoginScreen> {
           if (_isChecked) {
             // Save user info to shared preferences
             String userId = userCredential.user?.uid ?? '';
-            print('User ID: $userId');
             await saveUserInfoToLocalDatabase(userId);
             // Save login status
             SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -272,8 +273,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30.0),
                             ),
-                            padding:
-                                const EdgeInsets.fromLTRB(130.0, 15, 130.0, 15),
+                            padding: const EdgeInsets.only(top: 15, bottom: 15),
                           ),
                           child: const Text(
                             'Login',
