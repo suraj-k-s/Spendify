@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:spendify/expense.dart';
+import 'package:math_expressions/math_expressions.dart';
 
 class Calenders extends StatefulWidget {
   const Calenders({super.key});
@@ -9,12 +10,42 @@ class Calenders extends StatefulWidget {
 }
 
 class _CalendersState extends State<Calenders> {
+  String expression = '';
+  String result = '0';
+
+  void _handleButtonPress(String buttonText) {
+    setState(() {
+      if (buttonText == 'C') {
+        expression = '';
+        result = '0';
+      } else if (buttonText == '=') {
+        try {
+          Parser parser = Parser();
+          Expression exp = parser.parse(expression);
+          ContextModel cm = ContextModel();
+          double evaluatedResult = exp.evaluate(EvaluationType.REAL, cm);
+          result = evaluatedResult.toString();
+        } catch (e) {
+          result = 'Error';
+        }
+      } else {
+        if (result == '0') {
+          expression = buttonText;
+          result = buttonText;
+        } else {
+          expression += buttonText;
+          result = expression;
+        }
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true, 
       appBar: AppBar(),
-      body: Container(
-          child: Column(
+      body: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -106,145 +137,108 @@ class _CalendersState extends State<Calenders> {
           TextFormField(
             decoration: InputDecoration(border: OutlineInputBorder()),
             keyboardType: TextInputType.multiline,
-            minLines: 5,
+            minLines: 4,
             maxLines: null,
           ),
-          SizedBox(
-            height: 100,
-            child: Expanded(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+          //Calculator Screen
+          Container(
+            decoration: BoxDecoration(
+                border: Border.all(), borderRadius: BorderRadius.circular(5)),
+            height: 80,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    result,
+                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          ),
+      
+          // Calculator Buttons
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
                 children: [
-                  ElevatedButton(
-                    onPressed: () {},
-                    child: Text('7'),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildButton('7'),
+                      _buildButton('8'),
+                      _buildButton('9'),
+                      _buildButton('/'),
+                    ],
                   ),
-                  ElevatedButton(
-                    onPressed: () {},
-                    child: Text('8'),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildButton('4'),
+                      _buildButton('5'),
+                      _buildButton('6'),
+                      _buildButton('*'),
+                    ],
                   ),
-                  ElevatedButton(
-                    onPressed: () {},
-                    child: Text('9'),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildButton('1'),
+                      _buildButton('2'),
+                      _buildButton('3'),
+                      _buildButton('-'),
+                    ],
                   ),
-                  ElevatedButton(
-                    onPressed: () {},
-                    child: Text(
-                      '+',
-                      selectionColor: Color.fromARGB(255, 58, 25, 58),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildButton('.'),
+                      _buildButton('0'),
+                      _buildButton('C'),
+                      _buildButton('+'),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          _handleButtonPress('=');
+                        },
+                        child: Text(
+                          '=',
+                          style: TextStyle(fontSize: 24),
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
           ),
-          Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                ElevatedButton(
-                  onPressed: () {},
-                  child: Text('4'),
-                ),
-                ElevatedButton(
-                  onPressed: () {},
-                  child: Text('5'),
-                ),
-                ElevatedButton(
-                  onPressed: () {},
-                  child: Text('6'),
-                ),
-                ElevatedButton(
-                  onPressed: () {},
-                  child: Text(
-                    '-',
-                    selectionColor: Color.fromARGB(255, 58, 25, 58),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                ElevatedButton(
-                  onPressed: () {},
-                  child: Text('1'),
-                ),
-                ElevatedButton(
-                  onPressed: () {},
-                  child: Text('2'),
-                ),
-                ElevatedButton(
-                  onPressed: () {},
-                  child: Text('3'),
-                ),
-                ElevatedButton(
-                  onPressed: () {},
-                  child: Text(
-                    '*',
-                    selectionColor: Color.fromARGB(255, 58, 25, 58),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                ElevatedButton(
-                  onPressed: () {},
-                  child: Text(
-                    '.',
-                    selectionColor: Color.fromARGB(255, 58, 25, 58),
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: () {},
-                  child: Text('0'),
-                ),
-                ElevatedButton(
-                  onPressed: () {},
-                  child: Text(
-                    '()',
-                    selectionColor: Color.fromARGB(255, 58, 25, 58),
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: () {},
-                  child: Text(
-                    '/',
-                    selectionColor: Color.fromARGB(255, 58, 25, 58),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                ElevatedButton(
-                  onPressed: () {},
-                  child: Text(
-                    'AC',
-                    selectionColor: Color.fromARGB(255, 58, 25, 58),
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: () {},
-                  child: Text(
-                    '=',
-                    selectionColor: Color.fromARGB(255, 58, 25, 58),
-                  ),
-                ),
-              ],
-            ),
-          ),
         ],
-      )),
+      ),
+    );
+  }
+
+  Widget _buildButton(String buttonText) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.all(4.0),
+        child: ElevatedButton(
+          onPressed: () {
+            _handleButtonPress(buttonText);
+          },
+          child: Text(
+            buttonText,
+            style: TextStyle(fontSize: 24),
+          ),
+        ),
+      ),
     );
   }
 }
