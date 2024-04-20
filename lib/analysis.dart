@@ -20,7 +20,6 @@ class _AnalysisState extends State<Analysis> {
     });
   }
 
-  final List<Widget> _pages = [const Calender(), const Chart()];
   final List<Widget> _pages = [Calendar(), Chart()];
   int _currentIndex = 0;
   @override

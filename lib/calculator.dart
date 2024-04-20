@@ -215,8 +215,6 @@ class _CalendersState extends State<Calenders> {
               ),
             ),
           ),
-          Expanded(
-          ),
           //Calculator Screen
           Container(
             decoration: BoxDecoration(
