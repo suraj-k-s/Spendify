@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:spendify/expense.dart';
+import 'package:spendify/goal.dart';
+import 'package:spendify/income.dart';
+import 'package:spendify/photoadd.dart';
+import 'package:spendify/roles.dart';
 
 class Calenders extends StatefulWidget {
   const Calenders({super.key});
@@ -60,16 +64,34 @@ class _CalendersState extends State<Calenders> {
               SizedBox(
                 width: 20,
               ),
-              Text(
+             TextButton(
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Income(),
+                      ));
+                },
+              child:Text(
                 "INCOME",
                 style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
               ),
+             ),
               SizedBox(
                 width: 20,
               ),
-              Text(
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Goals(),
+                      ));
+                },
+                 child:  Text(
                 "GOAL",
                 style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
+              ),
               ),
               SizedBox(
                 width: 20,
@@ -92,7 +114,13 @@ class _CalendersState extends State<Calenders> {
                 ),
               ),
               ElevatedButton.icon(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Roles(),
+                      ));
+                },
                 icon: Icon(Icons.camera_alt),
                 label: Text(
                   "Add Photo",
@@ -109,6 +137,24 @@ class _CalendersState extends State<Calenders> {
             minLines: 5,
             maxLines: null,
           ),
+          Container(
+                  decoration: BoxDecoration(border: Border.all(),borderRadius:BorderRadius.circular(15)),
+                  padding: EdgeInsets.all(10),
+                  child: const Row(
+                    children: [
+                  Icon(Icons.backspace,),
+                   SizedBox(
+                    width: 10,
+                  ),
+                   Text("0",
+               
+                   style: TextStyle(fontWeight: FontWeight.bold),
+                   textAlign: TextAlign.right,
+                   ),
+                  ],
+                  ),
+
+                ),
           SizedBox(
             height: 100,
             child: Expanded(

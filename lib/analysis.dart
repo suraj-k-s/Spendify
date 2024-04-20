@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:spendify/Components/filtersheet.dart';
-import 'package:spendify/calender.dart';
+import 'package:spendify/calendar.dart';
 import 'package:spendify/chart.dart';
 
 class Analysis extends StatefulWidget {
@@ -11,7 +11,7 @@ class Analysis extends StatefulWidget {
 }
 
 class _AnalysisState extends State<Analysis> {
-  final List<Widget> _pages = [Calender(), Chart()];
+  final List<Widget> _pages = [Calendar(), Chart()];
   int _currentIndex = 0;
   @override
   Widget build(BuildContext context) {
