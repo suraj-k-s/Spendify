@@ -45,6 +45,7 @@ dependencies:
   workmanager: ^0.5.2
   permission_handler: ^11.3.0
   pie_chart: ^5.4.0
+  math_expressions: ^2.5.0
   
 
 dev_dependencies:
