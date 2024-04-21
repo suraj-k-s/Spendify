@@ -46,6 +46,7 @@ dependencies:
   permission_handler: ^11.3.0
   pie_chart: ^5.4.0
   math_expressions: ^2.5.0
+  table_calendar: ^3.0.9
   
 
 dev_dependencies:

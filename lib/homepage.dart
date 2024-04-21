@@ -6,7 +6,7 @@ import 'package:spendify/Components/filtersheet.dart';
 import 'package:spendify/Components/popupdaily.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({Key? key}) : super(key: key);
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -18,6 +18,8 @@ class _HomePageState extends State<HomePage> {
   double totalExpenses = 0.0;
   double totalIncome = 0.0;
   late Stream<QuerySnapshot> _dailyDataStream;
+  DateTime? _previousDate;
+  
   @override
   void initState() {
     super.initState();
@@ -31,8 +33,7 @@ class _HomePageState extends State<HomePage> {
 
   void _changeMonth(int increment) {
     setState(() {
-      _selectedDate =
-          DateTime(_selectedDate.year, _selectedDate.month + increment);
+      _selectedDate = DateTime(_selectedDate.year, _selectedDate.month + increment);
       _initDailyDataStream();
       getTotal();
     });
@@ -49,39 +50,38 @@ class _HomePageState extends State<HomePage> {
     final startDate = DateTime(year, month, 1);
     final endDate = DateTime(year, month + 1, 1);
     try {
-        QuerySnapshot<Map<String, dynamic>> totalSnapshot = await FirebaseFirestore.instance
-            .collection('daily')
-            .where('user_id', isEqualTo: userId)
-            .where('date', isGreaterThanOrEqualTo: startDate)
-            .where('date', isLessThan: endDate)
-            .get();
+      QuerySnapshot<Map<String, dynamic>> totalSnapshot = await FirebaseFirestore.instance
+          .collection('daily')
+          .where('user_id', isEqualTo: userId)
+          .where('date', isGreaterThanOrEqualTo: startDate)
+          .where('date', isLessThan: endDate)
+          .get();
 
-        // Process the data in totalSnapshot
-        for (QueryDocumentSnapshot<Map<String, dynamic>> documentSnapshot in totalSnapshot.docs) {
-            // Access data from each document
-            Map<String, dynamic> data = documentSnapshot.data();
-            double amt = double.parse(data['amount']);
-            DocumentSnapshot<Map<String, dynamic>> catSnap = await FirebaseFirestore.instance.collection('categories').doc(data['category_id']).get();
-            if (catSnap.exists){
-              Map<String, dynamic>? catdata = catSnap.data();
-              if(catdata?['type'] == 'income'){
-                inc+=amt;
-              }
-              else{
-                exp+=amt;
-              }
-            }
+      // Process the data in totalSnapshot
+      for (QueryDocumentSnapshot<Map<String, dynamic>> documentSnapshot in totalSnapshot.docs) {
+        // Access data from each document
+        Map<String, dynamic> data = documentSnapshot.data();
+        double amt = double.parse(data['amount']);
+        DocumentSnapshot<Map<String, dynamic>> catSnap = await FirebaseFirestore.instance.collection('categories').doc(data['category_id']).get();
+        if (catSnap.exists) {
+          Map<String, dynamic>? catdata = catSnap.data();
+          if (catdata?['type'] == 'income') {
+            inc += amt;
+          } else {
+            exp += amt;
+          }
         }
-        total = inc - exp;
-        setState(() {
-          totalAmt = total;
-          totalExpenses = exp;
-          totalIncome = inc;
-        });
+      }
+      total = inc - exp;
+      setState(() {
+        totalAmt = total;
+        totalExpenses = exp;
+        totalIncome = inc;
+      });
     } catch (e) {
-        print("Error fetching data: $e");
+      print("Error fetching data: $e");
     }
-}
+  }
 
 
   Stream<QuerySnapshot> getDailyDataStream() {
@@ -229,6 +229,11 @@ class _HomePageState extends State<HomePage> {
               itemBuilder: (context, index) {
                 final data = documents[index].data() as Map<String, dynamic>;
                 final DateTime date = DateTime.parse(data['date']);
+                if (_previousDate != null && _previousDate!.isAtSameMomentAs(date)) {
+                  return SizedBox.shrink(); // Skip printing date
+                }
+                _previousDate = date;
+
                 final String amount = data['amount'] ?? '0';
                 final String categoryId = data['category_id'];
                 final String note = data['note'];
@@ -262,37 +267,14 @@ class _HomePageState extends State<HomePage> {
                     Color amountColor =
                         type == 'expense' ? Colors.red : Colors.green;
 
-                    final documents = snapshot.data!.docs;
-                    double totalAmt = 0.0;
-                    double totalIncome = 0.0;
-                    double totalExpenses = 0.0;
-
-                    for (final document in documents) {
-                      final data = document.data() as Map<String, dynamic>;
-                      final String amountString = data['amount'] ?? '0';
-                      final double amount = double.tryParse(amountString) ?? 0;
-                      final String type = data['type'] ?? '';
-
-                      if (type == 'income') {
-                        totalIncome += amount;
-                      } else {
-                        totalExpenses += amount;
-                      }
-                    }
-                    totalAmt = totalIncome - totalExpenses;
-
-                    // setAmt(totalAmt, totalIncome, totalExpenses);
-                    // setState(() {
-                    //   this.totalAmt = totalAmt;
-                    //   this.totalIncome = totalIncome;
-                    //   this.totalExpenses = totalExpenses;
-                    // });
-
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(DateFormat('MMMM dd, EEEE').format(date),
-                            style: const TextStyle(fontSize: 15)),
+                        if (_previousDate != null)
+                          Text(
+                            DateFormat('MMMM dd, EEEE').format(date),
+                            style: const TextStyle(fontSize: 15),
+                          ),
                         const Divider(),
                         ListTile(
                           onTap: () {
