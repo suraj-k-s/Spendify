@@ -1,13 +1,17 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:spendify/expense.dart';
-import 'package:spendify/goal.dart';
-import 'package:spendify/income.dart';
-import 'package:spendify/photoadd.dart';
+import 'package:spendify/Components/category_sheet.dart';
 import 'package:spendify/roles.dart';
 import 'package:math_expressions/math_expressions.dart';
+import 'package:intl/intl.dart';
 
 class Calenders extends StatefulWidget {
-  const Calenders({super.key});
+  final String note = '';
+  final String type = 'income';
+  final String amt = '0';
+  final String category = '';
+  const Calenders({super.key, String id = '',String type = 'income',String amt = '0',String category = ''});
 
   @override
   State<Calenders> createState() => _CalendersState();
@@ -16,6 +20,14 @@ class Calenders extends StatefulWidget {
 class _CalendersState extends State<Calenders> {
   String expression = '';
   String result = '0';
+  bool _isIncomeSelected = true;
+  bool _isExpenseSelected = false;
+  bool _isGoalSelected = false;
+  String _type = "income";
+  String catButton = "Category";
+  String? selectedCategory;
+  final TextEditingController _noteController = TextEditingController();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   void _handleButtonPress(String buttonText) {
     setState(() {
@@ -44,199 +56,304 @@ class _CalendersState extends State<Calenders> {
     });
   }
 
+  void _handleSelectedCategory(String categoryId, String category) {
+    setState(() {
+      catButton = category;
+      selectedCategory = categoryId;
+    });
+  }
+
+  Future<void> saveData() async {
+    String formattedDate = DateFormat('yyyy-MM-dd').format(_selectedDate);
+    String formattedTime = '${_selectedTime.hour}:${_selectedTime.minute}';
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      final userId = user?.uid;
+      await _firestore.collection('daily').add({
+        'user_id': userId,
+        'category_id': selectedCategory,
+        'note': _noteController.text,
+        'amount': result,
+        'date': formattedDate,
+        'time': formattedTime,
+      });
+      print("Data saved successfully");
+      Navigator.pop(context);
+    } catch (e) {
+      print("Error saving data: $e");
+    }
+  }
+
+  DateTime _selectedDate = DateTime.now();
+  TimeOfDay _selectedTime = TimeOfDay.now();
+
+  // Function to show date picker dialog
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (pickedDate != null && pickedDate != _selectedDate) {
+      setState(() {
+        _selectedDate = pickedDate;
+      });
+    }
+  }
+
+  String _getMonthName(int month) {
+    switch (month) {
+      case 1:
+        return 'Jan';
+      case 2:
+        return 'Feb';
+      case 3:
+        return 'Mar';
+      case 4:
+        return 'Apr';
+      case 5:
+        return 'May';
+      case 6:
+        return 'Jun';
+      case 7:
+        return 'Jul';
+      case 8:
+        return 'Aug';
+      case 9:
+        return 'Sep';
+      case 10:
+        return 'Oct';
+      case 11:
+        return 'Nov';
+      case 12:
+        return 'Dec';
+      default:
+        return '';
+    }
+  }
+
+  // Function to show time picker dialog
+  Future<void> _selectTime(BuildContext context) async {
+    final TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: _selectedTime,
+    );
+    if (pickedTime != null && pickedTime != _selectedTime) {
+      setState(() {
+        _selectedTime = pickedTime;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: true, 
-      appBar: AppBar(),
-      body: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(onPressed: () {}, icon: const Icon(Icons.save)),
-              Text(
-                "SAVE",
-                style: TextStyle(
-                  color: Color.fromARGB(255, 98, 22, 113),
-                ),
-              ),
-              SizedBox(
-                width: 40,
-              ),
-              IconButton(onPressed: () {}, icon: const Icon(Icons.cancel)),
-              Text(
-                "CANCEL",
-                style: TextStyle(
-                  color: Color.fromARGB(255, 98, 22, 113),
-                ),
-              ),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              SizedBox(
-                height: 20,
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => Expense(),
-                      ));
-                },
-                child: Text(
-                  "EXPENSE",
-                  style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
-                ),
-              ),
-              SizedBox(
-                width: 20,
-              ),
-             TextButton(
-                onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => Income(),
-                      ));
-                },
-              child:Text(
-                "INCOME",
-                style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
-              ),
-             ),
-              SizedBox(
-                width: 20,
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => Goals(),
-                      ));
-                },
-                 child:  Text(
-                "GOAL",
-                style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
-              ),
-              ),
-              SizedBox(
-                width: 20,
-              ),
-            ],
-          ),
-          Row(
-            children: [
-              SizedBox(
-                height: 10,
-              ),
-              ElevatedButton.icon(
-                onPressed: () {},
-                icon: Icon(Icons.category),
-                label: Text(
-                  'Category',
-                  style: TextStyle(
-                    color: Color.fromARGB(255, 67, 1, 49),
-                  ),
-                ),
-              ),
-              ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => Roles(),
-                      ));
-                },
-                icon: Icon(Icons.camera_alt),
-                label: Text(
-                  "Add Photo",
-                  style: TextStyle(
-                    color: Color.fromARGB(255, 67, 1, 49),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          TextFormField(
-            decoration: InputDecoration(border: OutlineInputBorder()),
-            keyboardType: TextInputType.multiline,
-            minLines: 4,
-            maxLines: null,
-          ),
-          Container(
-                  decoration: BoxDecoration(border: Border.all(),borderRadius:BorderRadius.circular(15)),
-                  padding: EdgeInsets.all(10),
-                  child: const Row(
-                    children: [
-                  Icon(Icons.backspace,),
-                   SizedBox(
-                    width: 10,
-                  ),
-                   Text("0",
-               
-                   style: TextStyle(fontWeight: FontWeight.bold),
-                   textAlign: TextAlign.right,
-                   ),
-                  ],
-                  ),
-
-                ),
-          SizedBox(
-            height: 100,
-            child: Expanded(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {},
-                    child: Text('7'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {},
-                    child: Text('8'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {},
-                    child: Text('9'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {},
-                    child: Text(
-                      '+',
-                      selectionColor: Color.fromARGB(255, 58, 25, 58),
+      resizeToAvoidBottomInset: true,
+      body: SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () {
+                    saveData();
+                  },
+                  icon: const Icon(Icons.save),
+                  label: const Text(
+                    "SAVE",
+                    style: TextStyle(
+                      color: Color.fromARGB(255, 98, 22, 113),
                     ),
                   ),
-                ],
-              ),
-            ),
-          ),
-          //Calculator Screen
-          Container(
-            decoration: BoxDecoration(
-                border: Border.all(), borderRadius: BorderRadius.circular(5)),
-            height: 80,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    result,
-                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  icon: const Icon(Icons.save),
+                  label: const Text(
+                    "CANCEL",
+                    style: TextStyle(
+                      color: Color.fromARGB(255, 98, 22, 113),
+                    ),
                   ),
                 ),
               ],
             ),
-          ),
-      
-          // Calculator Buttons
-          Expanded(
-            child: Padding(
+            //Types
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _isIncomeSelected = true;
+                      _isExpenseSelected = false;
+                      _isGoalSelected = false;
+                      _type = "income";
+                    });
+                  },
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        child: _isIncomeSelected
+                            ? Center(child: Icon(Icons.check_circle))
+                            : null,
+                      ),
+                      Text(
+                        'INCOME',
+                        style: TextStyle(
+                            letterSpacing: .7,
+                            fontSize: 16,
+                            color: _isIncomeSelected
+                                ? null
+                                : Color.fromARGB(255, 135, 135, 135)),
+                      )
+                    ],
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _isIncomeSelected = false;
+                      _isExpenseSelected = true;
+                      _isGoalSelected = false;
+                      _type = "expense";
+                    });
+                  },
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        child: _isExpenseSelected
+                            ? Center(child: Icon(Icons.check_circle))
+                            : null,
+                      ),
+                      Text(
+                        'EXPENSE',
+                        style: TextStyle(
+                            letterSpacing: .7,
+                            fontSize: 16,
+                            color: _isExpenseSelected
+                                ? null
+                                : Color.fromARGB(255, 135, 135, 135)),
+                      )
+                    ],
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _isIncomeSelected = false;
+                      _isExpenseSelected = false;
+                      _isGoalSelected = true;
+                      _type = "goal";
+                    });
+                  },
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        child: _isGoalSelected
+                            ? Center(child: Icon(Icons.check_circle))
+                            : null,
+                      ),
+                      Text(
+                        'GOAL',
+                        style: TextStyle(
+                            letterSpacing: .7,
+                            fontSize: 16,
+                            color: _isGoalSelected
+                                ? null
+                                : Color.fromARGB(255, 135, 135, 135)),
+                      )
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                const SizedBox(
+                  height: 10,
+                ),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    showModalBottomSheet(
+                      context: context,
+                      builder: (context) => CategoryBottomSheet(
+                        onCategorySelected: _handleSelectedCategory,
+                        type: _type,
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.category),
+                  label: Text(
+                    catButton,
+                    style: TextStyle(
+                      color: Color.fromARGB(255, 67, 1, 49),
+                    ),
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const Roles(),
+                        ));
+                  },
+                  icon: const Icon(Icons.camera_alt),
+                  label: const Text(
+                    "Add Photo",
+                    style: TextStyle(
+                      color: Color.fromARGB(255, 67, 1, 49),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextFormField(
+                decoration: const InputDecoration(border: OutlineInputBorder()),
+                controller: _noteController,
+                keyboardType: TextInputType.multiline,
+                minLines: 4,
+                maxLines: null,
+              ),
+            ),
+
+            //Calculator Screen
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Container(
+                decoration: BoxDecoration(
+                    border: Border.all(),
+                    borderRadius: BorderRadius.circular(5)),
+                height: 80,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        result,
+                        style: const TextStyle(
+                            fontSize: 32, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Calculator Buttons
+            Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(
                 children: [
@@ -284,7 +401,7 @@ class _CalendersState extends State<Calenders> {
                         onPressed: () {
                           _handleButtonPress('=');
                         },
-                        child: Text(
+                        child: const Text(
                           '=',
                           style: TextStyle(fontSize: 24),
                         ),
@@ -294,24 +411,63 @@ class _CalendersState extends State<Calenders> {
                 ],
               ),
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.only(left: 50, right: 50),
+              child: Stack(
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      _selectDate(context);
+                    },
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '${_selectedDate.day} ${_getMonthName(_selectedDate.month)}, ${_selectedDate.year}',
+                      ), // Date
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.center,
+                    child: Container(
+                      height: 20, // Adjust the height of the line as needed
+                      width: 1, // Adjust the width of the line as needed
+                      color: Colors
+                          .black, // Adjust the color of the line as needed
+                      margin: EdgeInsets.symmetric(
+                          horizontal:
+                              8), // Adjust the spacing around the line as needed
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      _selectTime(context);
+                    },
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        '${_selectedTime.hour}:${_selectedTime.minute} ${_selectedTime.period == DayPeriod.am ? 'AM' : 'PM'}',
+                      ), // Time
+                    ),
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildButton(String buttonText) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.all(4.0),
-        child: ElevatedButton(
-          onPressed: () {
-            _handleButtonPress(buttonText);
-          },
-          child: Text(
-            buttonText,
-            style: TextStyle(fontSize: 24),
-          ),
+    return Padding(
+      padding: const EdgeInsets.all(4.0),
+      child: ElevatedButton(
+        onPressed: () {
+          _handleButtonPress(buttonText);
+        },
+        child: Text(
+          buttonText,
+          style: const TextStyle(fontSize: 24),
         ),
       ),
     );

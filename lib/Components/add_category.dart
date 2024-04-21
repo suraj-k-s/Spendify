@@ -7,7 +7,18 @@ import 'package:spendify/data/iconData.dart';
 
 class CategoryDialog extends StatefulWidget {
   final String title;
-  const CategoryDialog({Key? key, required this.title}) : super(key: key);
+  final String type;
+  final String category;
+  final IconData? icon;
+  final String? id;
+  const CategoryDialog(
+      {Key? key,
+      required this.title,
+      this.type = 'income',
+      this.category = '',
+      this.icon,
+      this.id})
+      : super(key: key);
 
   @override
   _CategoryDialogState createState() => _CategoryDialogState();
@@ -15,28 +26,38 @@ class CategoryDialog extends StatefulWidget {
 
 class _CategoryDialogState extends State<CategoryDialog> {
   final TextEditingController _textEditingController = TextEditingController();
-  bool _isIncomeSelected = true;
-  bool _isExpenseSelected = false;
-  String _type = "income";
+  String? _type;
   IconData? _selectedIcon;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   @override
-  void initState(){
+  void initState() {
     super.initState();
-
+    _selectedIcon = widget.icon;
+    _type = widget.type;
+    _textEditingController.text = widget.category;
   }
+
   void addcategory() {
     try {
       final user = FirebaseAuth.instance.currentUser;
       final userId = user?.uid;
       String categoryName = _textEditingController.text;
       int? iconCodePoint = _selectedIcon?.codePoint;
-      _firestore.collection('categories').add({
-        'type': _type,
-        'icon': iconCodePoint,
-        'name': categoryName,
-        'userId': userId
-      });
+      if (widget.id == null) {
+        _firestore.collection('categories').add({
+          'type': _type,
+          'icon': iconCodePoint,
+          'name': categoryName,
+          'userId': userId
+        });
+      } else {
+        _firestore.collection('categories').doc(widget.id).update({
+          'type': _type,
+          'icon': iconCodePoint,
+          'name': categoryName,
+          'userId': userId
+        });
+      }
 
       Navigator.of(context).pop();
     } catch (e) {
@@ -66,16 +87,13 @@ class _CategoryDialogState extends State<CategoryDialog> {
                 ),
                 GestureDetector(
                   onTap: () {
-                    print('Income');
                     setState(() {
-                      _isIncomeSelected = true;
-                      _isExpenseSelected = false;
                       _type = "income";
                     });
                   },
                   child: Row(
                     children: <Widget>[
-                      if (_isIncomeSelected)
+                      if (_type == 'income')
                         Padding(
                           padding: const EdgeInsets.all(3.0),
                           child: Icon(Icons.check),
@@ -85,7 +103,7 @@ class _CategoryDialogState extends State<CategoryDialog> {
                         style: TextStyle(
                             letterSpacing: .7,
                             fontSize: 16,
-                            color: _isExpenseSelected
+                            color: _type != 'income'
                                 ? Color.fromARGB(255, 135, 135, 135)
                                 : null),
                       ),
@@ -97,16 +115,13 @@ class _CategoryDialogState extends State<CategoryDialog> {
                 ),
                 GestureDetector(
                   onTap: () {
-                    print('Expense');
                     setState(() {
-                      _isIncomeSelected = false;
-                      _isExpenseSelected = true;
                       _type = "expense";
                     });
                   },
                   child: Row(
                     children: <Widget>[
-                      if (_isExpenseSelected)
+                      if (_type == 'expense')
                         Padding(
                           padding: const EdgeInsets.all(3.0),
                           child: Icon(Icons.check),
@@ -116,7 +131,7 @@ class _CategoryDialogState extends State<CategoryDialog> {
                         style: TextStyle(
                             letterSpacing: .7,
                             fontSize: 16,
-                            color: _isIncomeSelected
+                            color: _type != 'expense'
                                 ? Color.fromARGB(255, 135, 135, 135)
                                 : null),
                       ),
@@ -151,17 +166,20 @@ class _CategoryDialogState extends State<CategoryDialog> {
                 scrollDirection: Axis.horizontal,
                 shrinkWrap: true,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2, mainAxisSpacing: 12, crossAxisSpacing: 12),
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12),
                 itemCount: iconsList.length,
                 itemBuilder: (context, index) {
-                                final random = Random();
-
- final randomColor = Color.fromARGB(
-                255,
-                random.nextInt(256),
-                random.nextInt(256),
-                random.nextInt(256),
-              );
+                  final random = Random();
+                  final randomColor = Color.fromARGB(
+                    255,
+                    (random.nextInt(64) + 192), // Red value between 192 and 255
+                    (random.nextInt(64) +
+                        192), // Green value between 192 and 255
+                    (random.nextInt(64) +
+                        192), // Blue value between 192 and 255
+                  );
                   return GestureDetector(
                     onTap: () {
                       setState(() {
@@ -170,8 +188,9 @@ class _CategoryDialogState extends State<CategoryDialog> {
                     },
                     child: Container(
                       decoration: BoxDecoration(
-                        
-                          shape: BoxShape.circle, border: Border.all(),color:randomColor),
+                          shape: BoxShape.circle,
+                          border: Border.all(),
+                          color: randomColor),
                       child: Icon(
                         iconsList[index],
                         color: _selectedIcon == iconsList[index]
@@ -189,13 +208,15 @@ class _CategoryDialogState extends State<CategoryDialog> {
       actions: <Widget>[
         TextButton(
           onPressed: () {
+            print("icon: $_selectedIcon");
+
             Navigator.of(context).pop(); // Close the dialog
           },
           child: Text('Cancel'),
         ),
         TextButton(
           onPressed: () {
-           addcategory();
+            addcategory();
           },
           child: Text('Save'),
         ),
