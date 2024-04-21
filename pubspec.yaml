@@ -46,7 +46,11 @@ dependencies:
   permission_handler: ^11.3.0
   pie_chart: ^5.4.0
   math_expressions: ^2.5.0
+<<<<<<< HEAD
   table_calendar: ^3.0.9
+=======
+  photo_view: ^0.15.0
+>>>>>>> 9f4a98b3b46fd324ee0c2d0f5da52040c898d3c4
   
 
 dev_dependencies:

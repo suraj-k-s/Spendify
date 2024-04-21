@@ -240,7 +240,7 @@ class _HomePageState extends State<HomePage> {
                 final timeString = data['time'];
                 final formattedTimeString = '$timeString:00';
                 final time = DateFormat('HH:mm:ss').parse(formattedTimeString);
-
+                final String bill = data['bill'] ?? '';
                 final String id = documents[index].id;
 
                 return FutureBuilder<DocumentSnapshot>(
@@ -289,6 +289,7 @@ class _HomePageState extends State<HomePage> {
                                       type: type,
                                       icon: iconName,
                                       category: category,
+                                      bill:bill,
                                     ));
                           },
                           leading: CircleAvatar(
