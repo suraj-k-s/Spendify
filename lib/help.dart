@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 class Help extends StatefulWidget {
@@ -13,9 +12,9 @@ class _HelpState extends State<Help> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body: Center(
+      body: const Center(
         child: Text('Help'),
-        ),
+      ),
     );
   }
 }

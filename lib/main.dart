@@ -5,7 +5,6 @@ import 'package:spendify/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:spendify/work_manager_service.dart';
 import 'firebase_options.dart';
-import 'package:flutter/services.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

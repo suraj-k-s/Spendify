@@ -5,7 +5,10 @@ import 'package:spendify/settings.dart';
 class CustomAppBar extends StatefulWidget {
   final Color bgColor;
   final bool settings;
-  const CustomAppBar({super.key, this.bgColor=const Color.fromARGB(0, 255, 255, 255), this.settings = true});
+  const CustomAppBar(
+      {super.key,
+      this.bgColor = const Color.fromARGB(0, 255, 255, 255),
+      this.settings = true});
 
   @override
   State<CustomAppBar> createState() => _CustomAppBarState();
@@ -28,7 +31,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
                       Navigator.pop(context);
                     },
                     icon: const Icon(Icons.arrow_back_ios_new)),
-                if(widget.settings)
+                if (widget.settings)
                   Container(
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,

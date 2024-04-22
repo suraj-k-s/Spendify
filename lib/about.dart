@@ -1,5 +1,5 @@
-
 import 'package:flutter/material.dart';
+
 class About extends StatefulWidget {
   const About({super.key});
 
@@ -12,9 +12,9 @@ class _AboutState extends State<About> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body: Center(
+      body: const Center(
         child: Text('About'),
-        ),
+      ),
     );
   }
 }

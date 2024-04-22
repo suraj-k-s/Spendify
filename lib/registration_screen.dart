@@ -14,7 +14,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:progress_dialog_null_safe/progress_dialog_null_safe.dart';
 
 class RegistrationScreen extends StatefulWidget {
-  const RegistrationScreen({Key? key}) : super(key: key);
+  const RegistrationScreen({super.key});
 
   @override
   State<RegistrationScreen> createState() => _RegistrationScreenState();
@@ -177,7 +177,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     }
     return null;
   }
-
 
   String? _validatePrefix(String? value) {
     if (value == null || value.isEmpty) {

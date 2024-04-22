@@ -41,7 +41,7 @@ class _CalendersState extends State<Calenders> {
   late ProgressDialog _progressDialog;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     _progressDialog = ProgressDialog(context);
   }

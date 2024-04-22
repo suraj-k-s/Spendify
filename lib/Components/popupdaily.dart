@@ -16,7 +16,7 @@ class PopupDaily extends StatelessWidget {
   final String bill;
 
   const PopupDaily({
-    Key? key,
+    super.key,
     required this.type,
     required this.amt,
     required this.date,
@@ -26,7 +26,7 @@ class PopupDaily extends StatelessWidget {
     required this.icon,
     required this.category,
     required this.bill,
-  }) : super(key: key);
+  });
 
   Future<void> deleteDaily(BuildContext context) async {
     try {
@@ -64,7 +64,7 @@ class PopupDaily extends StatelessWidget {
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.close,
                     color: Color.fromARGB(255, 48, 2, 35),
                   ),
@@ -75,7 +75,7 @@ class PopupDaily extends StatelessWidget {
                       onPressed: () {
                         deleteDaily(context);
                       },
-                      icon: Icon(Icons.delete),
+                      icon: const Icon(Icons.delete),
                     ),
                   ],
                 )
@@ -83,49 +83,49 @@ class PopupDaily extends StatelessWidget {
             ),
             Text(
               type,
-              style: TextStyle(color: Colors.orangeAccent),
+              style: const TextStyle(color: Colors.orangeAccent),
               textAlign: TextAlign.center,
             ),
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
             Text(
               '-$amt',
-              style: TextStyle(color: Colors.orangeAccent),
+              style: const TextStyle(color: Colors.orangeAccent),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text(
-              '${DateFormat('MMMM dd, yyyy hh:mm a').format(date)}',
+              DateFormat('MMMM dd, yyyy hh:mm a').format(date),
               textAlign: TextAlign.right,
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Row(
               children: [
-                Text("Category"),
-                SizedBox(width: 10),
+                const Text("Category"),
+                const SizedBox(width: 10),
                 Container(
                   decoration: BoxDecoration(
                     border: Border.all(),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  padding: EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(10),
                   child: Row(
                     children: [
                       Icon(
                         IconData(icon, fontFamily: 'MaterialIcons'),
                         size: 24,
                       ),
-                      SizedBox(width: 10),
+                      const SizedBox(width: 10),
                       Text(category),
                     ],
                   ),
                 ),
               ],
             ),
-            SizedBox(
+            const SizedBox(
               height: 10,
             ),
-            Text('Bill:-'),
-            SizedBox(
+            const Text('Bill:-'),
+            const SizedBox(
               height: 10,
             ),
             bill != ''
@@ -141,10 +141,10 @@ class PopupDaily extends StatelessWidget {
                       );
                     },
                     child: SizedBox(
-                      height: 300,
-                      child: Image.network(bill, fit: BoxFit.cover)),
+                        height: 300,
+                        child: Image.network(bill, fit: BoxFit.cover)),
                   )
-                : Text('No Bill Added'),
+                : const Text('No Bill Added'),
           ],
         ),
       ),
@@ -155,7 +155,7 @@ class PopupDaily extends StatelessWidget {
 class FullScreenImage extends StatelessWidget {
   final String imageUrl;
 
-  const FullScreenImage({Key? key, required this.imageUrl}) : super(key: key);
+  const FullScreenImage({super.key, required this.imageUrl});
 
   @override
   Widget build(BuildContext context) {
@@ -166,7 +166,7 @@ class FullScreenImage extends StatelessWidget {
           imageProvider: NetworkImage(imageUrl),
           minScale: PhotoViewComputedScale.contained,
           maxScale: PhotoViewComputedScale.covered * 2.0,
-          backgroundDecoration: BoxDecoration(
+          backgroundDecoration: const BoxDecoration(
             color: Colors.black,
           ),
         ),

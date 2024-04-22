@@ -9,7 +9,7 @@ import 'dart:math';
 import 'package:spendify/Components/add_category.dart';
 
 class Categories extends StatelessWidget {
-  const Categories({Key? key}) : super(key: key);
+  const Categories({super.key});
 
   @override
   Widget build(BuildContext context) {

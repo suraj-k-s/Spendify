@@ -27,7 +27,7 @@ class WavePainter extends CustomPainter {
 class WaveBackground extends StatelessWidget {
   final Color color;
 
-  const WaveBackground({Key? key, required this.color}) : super(key: key);
+  const WaveBackground({super.key, required this.color});
 
   @override
   Widget build(BuildContext context) {

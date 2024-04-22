@@ -6,7 +6,7 @@ import 'package:spendify/Components/filtersheet.dart';
 import 'package:spendify/Components/popupdaily.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -19,7 +19,7 @@ class _HomePageState extends State<HomePage> {
   double totalIncome = 0.0;
   late Stream<QuerySnapshot> _dailyDataStream;
   DateTime? _previousDate;
-  
+
   @override
   void initState() {
     super.initState();
@@ -33,7 +33,8 @@ class _HomePageState extends State<HomePage> {
 
   void _changeMonth(int increment) {
     setState(() {
-      _selectedDate = DateTime(_selectedDate.year, _selectedDate.month + increment);
+      _selectedDate =
+          DateTime(_selectedDate.year, _selectedDate.month + increment);
       _initDailyDataStream();
       getTotal();
     });
@@ -50,19 +51,25 @@ class _HomePageState extends State<HomePage> {
     final startDate = DateTime(year, month, 1);
     final endDate = DateTime(year, month + 1, 1);
     try {
-      QuerySnapshot<Map<String, dynamic>> totalSnapshot = await FirebaseFirestore.instance
-          .collection('daily')
-          .where('user_id', isEqualTo: userId)
-          .where('date', isGreaterThanOrEqualTo: startDate)
-          .where('date', isLessThan: endDate)
-          .get();
+      QuerySnapshot<Map<String, dynamic>> totalSnapshot =
+          await FirebaseFirestore.instance
+              .collection('daily')
+              .where('user_id', isEqualTo: userId)
+              .where('date', isGreaterThanOrEqualTo: startDate)
+              .where('date', isLessThan: endDate)
+              .get();
 
       // Process the data in totalSnapshot
-      for (QueryDocumentSnapshot<Map<String, dynamic>> documentSnapshot in totalSnapshot.docs) {
+      for (QueryDocumentSnapshot<Map<String, dynamic>> documentSnapshot
+          in totalSnapshot.docs) {
         // Access data from each document
         Map<String, dynamic> data = documentSnapshot.data();
         double amt = double.parse(data['amount']);
-        DocumentSnapshot<Map<String, dynamic>> catSnap = await FirebaseFirestore.instance.collection('categories').doc(data['category_id']).get();
+        DocumentSnapshot<Map<String, dynamic>> catSnap = await FirebaseFirestore
+            .instance
+            .collection('categories')
+            .doc(data['category_id'])
+            .get();
         if (catSnap.exists) {
           Map<String, dynamic>? catdata = catSnap.data();
           if (catdata?['type'] == 'income') {
@@ -82,7 +89,6 @@ class _HomePageState extends State<HomePage> {
       print("Error fetching data: $e");
     }
   }
-
 
   Stream<QuerySnapshot> getDailyDataStream() {
     int year = _selectedDate.year.toInt();
@@ -140,7 +146,6 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
-
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               mainAxisSize: MainAxisSize.max,
@@ -166,42 +171,42 @@ class _HomePageState extends State<HomePage> {
           children: [
             Column(
               children: [
-                Text(
+                const Text(
                   "EXPENSE",
                   style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
                 ),
                 Text(
                   totalExpenses.toString(),
-                  style: TextStyle(color: Colors.black),
+                  style: const TextStyle(color: Colors.black),
                 ),
               ],
             ),
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(
+                const SizedBox(
                   width: 50,
                 ),
-                Text(
+                const Text(
                   "INCOME",
                   style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
                 ),
                 Text(
                   totalIncome.toString(),
-                  style: TextStyle(color: Colors.black),
+                  style: const TextStyle(color: Colors.black),
                 ),
               ],
             ),
             Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Text(
+                const Text(
                   "TOTAL",
                   style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
                 ),
                 Text(
                   totalAmt.toString(),
-                  style: TextStyle(color: Colors.black),
+                  style: const TextStyle(color: Colors.black),
                 ),
               ],
             ),
@@ -229,8 +234,9 @@ class _HomePageState extends State<HomePage> {
               itemBuilder: (context, index) {
                 final data = documents[index].data() as Map<String, dynamic>;
                 final DateTime date = DateTime.parse(data['date']);
-                if (_previousDate != null && _previousDate!.isAtSameMomentAs(date)) {
-                  return SizedBox.shrink(); // Skip printing date
+                if (_previousDate != null &&
+                    _previousDate!.isAtSameMomentAs(date)) {
+                  return const SizedBox.shrink(); // Skip printing date
                 }
                 _previousDate = date;
 
@@ -289,7 +295,7 @@ class _HomePageState extends State<HomePage> {
                                       type: type,
                                       icon: iconName,
                                       category: category,
-                                      bill:bill,
+                                      bill: bill,
                                     ));
                           },
                           leading: CircleAvatar(

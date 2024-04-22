@@ -10,17 +10,14 @@ class Popupcal extends StatefulWidget {
 class _PopupcalState extends State<Popupcal> {
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return const Column(
       children: [
         ListTile(
-           leading: const CircleAvatar(
-                    backgroundColor: Colors.orangeAccent,
-                    child: Icon(Icons.wallet_giftcard_outlined),
-                    
-           ),
+          leading: CircleAvatar(
+            backgroundColor: Colors.orangeAccent,
+            child: Icon(Icons.wallet_giftcard_outlined),
+          ),
         ),
-
-        
       ],
     );
   }

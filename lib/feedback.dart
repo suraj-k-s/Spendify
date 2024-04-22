@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 class FeedbackPage extends StatefulWidget {
   const FeedbackPage({super.key});
 
@@ -11,9 +12,9 @@ class _FeedbackPageState extends State<FeedbackPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body: Center(
+      body: const Center(
         child: Text('Feedback'),
-        ),
+      ),
     );
   }
 }

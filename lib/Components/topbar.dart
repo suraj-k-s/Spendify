@@ -8,11 +8,10 @@ class CustomTopBar extends StatefulWidget implements PreferredSizeWidget {
   final String docId;
 
   const CustomTopBar(
-      {Key? key,
+      {super.key,
       required this.docId,
       this.showBackIcon = true,
-      this.showNotificationButton = true})
-      : super(key: key);
+      this.showNotificationButton = true});
 
   @override
   State<CustomTopBar> createState() => _CustomTopBarState();

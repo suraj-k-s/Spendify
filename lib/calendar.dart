@@ -5,6 +5,8 @@ class Calendar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(child: Text('Calender'),);
+    return const Center(
+      child: Text('Calender'),
+    );
   }
 }

@@ -52,7 +52,6 @@ class LocalNotificationService {
     );
   }
 
-
   static void showDailySchduledNotification() async {
     const AndroidNotificationDetails android = AndroidNotificationDetails(
       'daily schduled notification',
