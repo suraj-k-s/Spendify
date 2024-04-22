@@ -21,7 +21,11 @@ class _AnalysisState extends State<Analysis> {
     });
   }
 
-  final List<Widget> _pages = [Calendar(), ChartE(), ChartI()];
+  final List<Widget> _pages = [
+    const Calendar(),
+    const ChartE(),
+    const ChartI()
+  ];
   int _currentIndex = 0;
   @override
   Widget build(BuildContext context) {

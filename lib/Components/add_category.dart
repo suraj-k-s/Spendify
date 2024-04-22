@@ -12,13 +12,12 @@ class CategoryDialog extends StatefulWidget {
   final IconData? icon;
   final String? id;
   const CategoryDialog(
-      {Key? key,
+      {super.key,
       required this.title,
       this.type = 'income',
       this.category = '',
       this.icon,
-      this.id})
-      : super(key: key);
+      this.id});
 
   @override
   _CategoryDialogState createState() => _CategoryDialogState();
@@ -69,7 +68,7 @@ class _CategoryDialogState extends State<CategoryDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text('${widget.title} Category'),
-      content: Container(
+      content: SizedBox(
         height: 250,
         width: 300,
         child: Column(
@@ -78,11 +77,11 @@ class _CategoryDialogState extends State<CategoryDialog> {
           children: [
             Row(
               children: [
-                Text(
+                const Text(
                   'Type:',
                   style: TextStyle(fontSize: 16),
                 ),
-                SizedBox(
+                const SizedBox(
                   width: 5,
                 ),
                 GestureDetector(
@@ -94,8 +93,8 @@ class _CategoryDialogState extends State<CategoryDialog> {
                   child: Row(
                     children: <Widget>[
                       if (_type == 'income')
-                        Padding(
-                          padding: const EdgeInsets.all(3.0),
+                        const Padding(
+                          padding: EdgeInsets.all(3.0),
                           child: Icon(Icons.check),
                         ),
                       Text(
@@ -104,13 +103,13 @@ class _CategoryDialogState extends State<CategoryDialog> {
                             letterSpacing: .7,
                             fontSize: 16,
                             color: _type != 'income'
-                                ? Color.fromARGB(255, 135, 135, 135)
+                                ? const Color.fromARGB(255, 135, 135, 135)
                                 : null),
                       ),
                     ],
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   width: 10,
                 ),
                 GestureDetector(
@@ -122,8 +121,8 @@ class _CategoryDialogState extends State<CategoryDialog> {
                   child: Row(
                     children: <Widget>[
                       if (_type == 'expense')
-                        Padding(
-                          padding: const EdgeInsets.all(3.0),
+                        const Padding(
+                          padding: EdgeInsets.all(3.0),
                           child: Icon(Icons.check),
                         ),
                       Text(
@@ -132,7 +131,7 @@ class _CategoryDialogState extends State<CategoryDialog> {
                             letterSpacing: .7,
                             fontSize: 16,
                             color: _type != 'expense'
-                                ? Color.fromARGB(255, 135, 135, 135)
+                                ? const Color.fromARGB(255, 135, 135, 135)
                                 : null),
                       ),
                     ],
@@ -142,12 +141,12 @@ class _CategoryDialogState extends State<CategoryDialog> {
             ),
             TextFormField(
               controller: _textEditingController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Enter category name',
               ),
             ),
-            SizedBox(height: 20),
-            Align(
+            const SizedBox(height: 20),
+            const Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 'Icons:',
@@ -155,9 +154,9 @@ class _CategoryDialogState extends State<CategoryDialog> {
                 style: TextStyle(fontSize: 16),
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Container(
-              padding: EdgeInsets.all(8),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey),
               ),
@@ -165,7 +164,7 @@ class _CategoryDialogState extends State<CategoryDialog> {
               child: GridView.builder(
                 scrollDirection: Axis.horizontal,
                 shrinkWrap: true,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     mainAxisSpacing: 12,
                     crossAxisSpacing: 12),
@@ -212,13 +211,13 @@ class _CategoryDialogState extends State<CategoryDialog> {
 
             Navigator.of(context).pop(); // Close the dialog
           },
-          child: Text('Cancel'),
+          child: const Text('Cancel'),
         ),
         TextButton(
           onPressed: () {
             addcategory();
           },
-          child: Text('Save'),
+          child: const Text('Save'),
         ),
       ],
     );

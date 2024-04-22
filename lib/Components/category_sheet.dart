@@ -4,7 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class CategoryBottomSheet extends StatelessWidget {
   final String type;
   final Function(String, String) onCategorySelected;
-  const CategoryBottomSheet({super.key, required this.type, required this.onCategorySelected});
+  const CategoryBottomSheet(
+      {super.key, required this.type, required this.onCategorySelected});
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +33,7 @@ class CategoryBottomSheet extends StatelessWidget {
 
               List<Map<String, dynamic>> categories = [];
 
-              snapshot.data!.docs.forEach((doc) {
+              for (var doc in snapshot.data!.docs) {
                 var data = doc.data() as Map<String, dynamic>;
                 final category = {
                   'id': doc.id,
@@ -42,7 +43,7 @@ class CategoryBottomSheet extends StatelessWidget {
                   'type': data['type'],
                 };
                 categories.add(category);
-              });
+              }
 
               return Column(
                 children: [
@@ -57,7 +58,8 @@ class CategoryBottomSheet extends StatelessWidget {
                         final cat = categories[index];
                         return GestureDetector(
                           onTap: () {
-                            onCategorySelected(cat['id'],cat['name']); // Call the callback function with the selected category ID
+                            onCategorySelected(cat['id'],
+                                cat['name']); // Call the callback function with the selected category ID
                             Navigator.pop(context);
                           },
                           child: Column(

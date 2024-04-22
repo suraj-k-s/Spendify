@@ -4,7 +4,6 @@ import 'package:spendify/about.dart';
 import 'package:spendify/analysis.dart';
 import 'package:spendify/backuprestore.dart';
 import 'package:spendify/budget.dart';
-import 'package:spendify/budgetlimit.dart';
 import 'package:spendify/category.dart';
 import 'package:spendify/feedback.dart';
 import 'package:spendify/help.dart';
@@ -38,7 +37,7 @@ class _DashBoardState extends State<DashBoard> {
     // Navigate to the login screen
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => LoginScreen()),
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
     );
   }
 

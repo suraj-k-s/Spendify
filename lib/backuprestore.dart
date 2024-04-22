@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 class BackupRestore extends StatefulWidget {
@@ -12,8 +11,9 @@ class _BackupRestoreState extends State<BackupRestore> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar() ,
-      body: Center(child: Text('Backup/Restore'),
+      appBar: AppBar(),
+      body: const Center(
+        child: Text('Backup/Restore'),
       ),
     );
   }

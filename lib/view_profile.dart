@@ -39,7 +39,7 @@ class _ViewProfileState extends State<ViewProfile> {
       rethrow;
     }
     userDocs.clear();
-    querySnapshot.docs.forEach((DocumentSnapshot document) {
+    for (var document in querySnapshot.docs) {
       // Access the data in each document
       // print('${document.id} => ${document.data()}');
       if (id == '') {
@@ -58,10 +58,9 @@ class _ViewProfileState extends State<ViewProfile> {
         image = documentData.containsKey('imageUrl')
             ? documentData['imageUrl']
             : '';
-        
       }
       userDocs.add(documentData);
-    });
+    }
   }
 
   void _userChange(Map<String, dynamic> selecteduser) {
@@ -209,14 +208,12 @@ class _ViewProfileState extends State<ViewProfile> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) =>
-                                    EditProfile(userId: id)));
+                                builder: (context) => EditProfile(userId: id)));
                       },
                       child: const Text('Edit'),
                     ),
                   ],
                 ),
-               
               ],
             ),
           ),
@@ -287,7 +284,6 @@ class _ViewProfileState extends State<ViewProfile> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                         
                           Text(
                             'Gender',
                             style: TextStyle(
@@ -300,7 +296,7 @@ class _ViewProfileState extends State<ViewProfile> {
                       SizedBox(
                         width: 50,
                       ),
-                     ],
+                    ],
                   ),
                 ],
               ),

@@ -77,16 +77,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             if (isHomeListVisible)
-             Container(
-              padding: const EdgeInsets.only(top: 20, bottom: 20),
-              decoration: const BoxDecoration(
-                  color: Color.fromARGB(255, 220, 231, 253)),
-              child: const Text(
-                "Contact",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                textAlign: TextAlign.center,
+              Container(
+                padding: const EdgeInsets.only(top: 20, bottom: 20),
+                decoration: const BoxDecoration(
+                    color: Color.fromARGB(255, 220, 231, 253)),
+                child: const Text(
+                  "Contact",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                  textAlign: TextAlign.center,
+                ),
               ),
-            ),
             Container(
               padding: const EdgeInsets.only(top: 20, bottom: 20),
               decoration:
@@ -140,7 +140,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     // Navigate to the login screen
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => LoginScreen()),
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
     );
   }
 }

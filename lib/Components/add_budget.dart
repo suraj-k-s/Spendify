@@ -8,14 +8,13 @@ class Add_Budget extends StatefulWidget {
 }
 
 class _Add_BudgetState extends State<Add_Budget> {
-
-final TextEditingController _limitController = TextEditingController();
+  final TextEditingController _limitController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Set Budget'),
-      content: Container(
+      title: const Text('Set Budget'),
+      content: SizedBox(
         height: 250,
         width: 300,
         child: Column(
@@ -38,30 +37,30 @@ final TextEditingController _limitController = TextEditingController();
                 ],
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 20,
             ),
             Row(
               children: [
-                Flexible(child: Text("Limit")),
-                SizedBox(
+                const Flexible(child: Text("Limit")),
+                const SizedBox(
                   width: 10,
                 ),
                 Flexible(
                   child: TextFormField(
                     controller: _limitController,
-                    decoration: InputDecoration(
-                     hintText: "0",
+                    decoration: const InputDecoration(
+                      hintText: "0",
                     ),
                   ),
                 )
               ],
             ),
-            SizedBox(
+            const SizedBox(
               height: 10,
             ),
-            Text("Month: April,2024"),
-            SizedBox(
+            const Text("Month: April,2024"),
+            const SizedBox(
               height: 10,
             ),
           ],
@@ -72,11 +71,11 @@ final TextEditingController _limitController = TextEditingController();
           onPressed: () {
             Navigator.of(context).pop(); // Close the dialog
           },
-          child: Text('Cancel'),
+          child: const Text('Cancel'),
         ),
         TextButton(
           onPressed: () {},
-          child: Text('Save'),
+          child: const Text('Save'),
         ),
       ],
     );

@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:spendify/main.dart';
 
 class ForgotPassword extends StatelessWidget {
-  const ForgotPassword({Key? key}) : super(key: key);
+  const ForgotPassword({super.key});
 
   Future<void> resetPassword(BuildContext context, String email) async {
     try {

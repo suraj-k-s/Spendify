@@ -1,6 +1,4 @@
-
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 class Myaccount extends StatefulWidget {
   const Myaccount({super.key});
@@ -14,10 +12,9 @@ class _MyaccountState extends State<Myaccount> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body:Center (
-     child: Text("MyAccount"),
+      body: const Center(
+        child: Text("MyAccount"),
       ),
-     
     );
   }
 }

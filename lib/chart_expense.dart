@@ -21,38 +21,37 @@ class _ChartEState extends State<ChartE> {
   bool dataLoaded = false;
 
   Future<void> fetchDataFromFirestore() async {
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
-  User? user = FirebaseAuth.instance.currentUser;
-  if (user != null) {
-    QuerySnapshot dailySnapshot = await firestore
-        .collection('daily')
-        .where('user_id', isEqualTo: user.uid)
-        .get();
-    dataMap.clear();
-    for (QueryDocumentSnapshot dailyDoc in dailySnapshot.docs) {
-      String categoryId = dailyDoc['category_id'];
-      double amount = double.parse(dailyDoc['amount']);
-      
-      // Retrieve category information from the "categories" collection
-      DocumentSnapshot categorySnapshot =
-          await firestore.collection('categories').doc(categoryId).get();
-      
-      // Check if the category document exists and if it is an expense category
-      if (categorySnapshot.exists && categorySnapshot['type'] == 'expense') {
-        String categoryName = categorySnapshot['name'];
-        if (!dataMap.containsKey(categoryName)) {
-          dataMap[categoryName] = amount;
-        } else {
-          dataMap[categoryName] = dataMap[categoryName]! + amount;
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      QuerySnapshot dailySnapshot = await firestore
+          .collection('daily')
+          .where('user_id', isEqualTo: user.uid)
+          .get();
+      dataMap.clear();
+      for (QueryDocumentSnapshot dailyDoc in dailySnapshot.docs) {
+        String categoryId = dailyDoc['category_id'];
+        double amount = double.parse(dailyDoc['amount']);
+
+        // Retrieve category information from the "categories" collection
+        DocumentSnapshot categorySnapshot =
+            await firestore.collection('categories').doc(categoryId).get();
+
+        // Check if the category document exists and if it is an expense category
+        if (categorySnapshot.exists && categorySnapshot['type'] == 'expense') {
+          String categoryName = categorySnapshot['name'];
+          if (!dataMap.containsKey(categoryName)) {
+            dataMap[categoryName] = amount;
+          } else {
+            dataMap[categoryName] = dataMap[categoryName]! + amount;
+          }
         }
       }
+      setState(() {
+        dataLoaded = true;
+      });
     }
-    setState(() {
-      dataLoaded = true;
-    });
   }
-}
-
 
   @override
   void initState() {
@@ -69,7 +68,7 @@ class _ChartEState extends State<ChartE> {
             dataMap.isNotEmpty
                 ? PieChart(
                     dataMap: dataMap,
-                    animationDuration: Duration(milliseconds: 800),
+                    animationDuration: const Duration(milliseconds: 800),
                     chartLegendSpacing: 32,
                     chartRadius: MediaQuery.of(context).size.width != 0
                         ? MediaQuery.of(context).size.width / 3.2
@@ -79,7 +78,7 @@ class _ChartEState extends State<ChartE> {
                     chartType: ChartType.ring,
                     ringStrokeWidth: 32,
                     centerText: "Expense",
-                    legendOptions: LegendOptions(
+                    legendOptions: const LegendOptions(
                       showLegendsInRow: false,
                       legendPosition: LegendPosition.right,
                       showLegends: true,
@@ -88,7 +87,7 @@ class _ChartEState extends State<ChartE> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    chartValuesOptions: ChartValuesOptions(
+                    chartValuesOptions: const ChartValuesOptions(
                       showChartValueBackground: true,
                       showChartValues: true,
                       showChartValuesInPercentage: false,
@@ -96,7 +95,7 @@ class _ChartEState extends State<ChartE> {
                       decimalPlaces: 1,
                     ),
                   )
-                : Text('No data found'),
+                : const Text('No data found'),
         ],
       ),
     );
