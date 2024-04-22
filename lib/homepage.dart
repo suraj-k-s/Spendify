@@ -227,7 +227,6 @@ class _HomePageState extends State<HomePage> {
             }
 
             final documents = snapshot.data!.docs;
-
             return ListView.builder(
               shrinkWrap: true,
               itemCount: documents.length,

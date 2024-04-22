@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 class Budgetlimt extends StatefulWidget {
   const Budgetlimt(
       {super.key,
-      required this.width,
-      required this.height,
-      required this.progress});
-  final double width;
-  final double height;
-  final double progress;
+      // required this.width,
+      // required this.height,
+      // required this.progress
+      });
+  // final double width;
+  // final double height;
+  // final double progress;
   @override
   State<Budgetlimt> createState() => _BudgetlimtState();
 }

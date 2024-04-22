@@ -21,11 +21,18 @@ class _AnalysisState extends State<Analysis> {
     });
   }
 
-  final List<Widget> _pages = [
-    const Calendar(),
-    const ChartE(),
-    const ChartI()
-  ];
+  late List<Widget> _pages;
+
+  @override
+  void initState() {
+    _pages = [
+      Calendar(),
+      ChartE(selectedDate: _selectedDate),
+      ChartI(),
+    ];
+    super.initState();
+  }
+
   int _currentIndex = 0;
   @override
   Widget build(BuildContext context) {
