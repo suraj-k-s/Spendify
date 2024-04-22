@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:spendify/Components/filtersheet.dart';
 import 'package:spendify/calendar.dart';
-import 'package:spendify/chart.dart';
+import 'package:spendify/chart_expense.dart';
+import 'package:spendify/chart_income.dart';
 
 class Analysis extends StatefulWidget {
   const Analysis({super.key});
@@ -20,7 +21,7 @@ class _AnalysisState extends State<Analysis> {
     });
   }
 
-  final List<Widget> _pages = [Calendar(), Chart()];
+  final List<Widget> _pages = [Calendar(), ChartE(), ChartI()];
   int _currentIndex = 0;
   @override
   Widget build(BuildContext context) {
@@ -148,7 +149,11 @@ class _AnalysisState extends State<Analysis> {
               ),
               DropdownMenuItem(
                 value: 1,
-                child: Text('Chart'),
+                child: Text('Chart Expense'),
+              ),
+              DropdownMenuItem(
+                value: 2,
+                child: Text('Chart Income'),
               ),
             ],
             onChanged: (newIndex) {

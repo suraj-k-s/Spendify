@@ -1,17 +1,25 @@
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:spendify/Components/category_sheet.dart';
-import 'package:spendify/roles.dart';
 import 'package:math_expressions/math_expressions.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:progress_dialog_null_safe/progress_dialog_null_safe.dart';
 
 class Calenders extends StatefulWidget {
   final String note = '';
   final String type = 'income';
   final String amt = '0';
   final String category = '';
-  const Calenders({super.key, String id = '',String type = 'income',String amt = '0',String category = ''});
+  const Calenders(
+      {super.key,
+      String id = '',
+      String type = 'income',
+      String amt = '0',
+      String category = ''});
 
   @override
   State<Calenders> createState() => _CalendersState();
@@ -25,9 +33,30 @@ class _CalendersState extends State<Calenders> {
   bool _isGoalSelected = false;
   String _type = "income";
   String catButton = "Category";
+  String uploadButton = "Add Bill";
   String? selectedCategory;
   final TextEditingController _noteController = TextEditingController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  XFile? _selectedImage;
+  late ProgressDialog _progressDialog;
+
+  @override
+  void initState(){
+    super.initState();
+    _progressDialog = ProgressDialog(context);
+  }
+
+  Future<void> _pickImage() async {
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = XFile(pickedFile.path);
+        uploadButton = "Bill Uploaded";
+      });
+    }
+  }
 
   void _handleButtonPress(String buttonText) {
     setState(() {
@@ -64,23 +93,50 @@ class _CalendersState extends State<Calenders> {
   }
 
   Future<void> saveData() async {
+    _progressDialog.show();
     String formattedDate = DateFormat('yyyy-MM-dd').format(_selectedDate);
     String formattedTime = '${_selectedTime.hour}:${_selectedTime.minute}';
     try {
       final user = FirebaseAuth.instance.currentUser;
       final userId = user?.uid;
-      await _firestore.collection('daily').add({
+      DocumentReference newDocumentRef =
+          await _firestore.collection('daily').add({
         'user_id': userId,
         'category_id': selectedCategory,
         'note': _noteController.text,
         'amount': result,
         'date': formattedDate,
         'time': formattedTime,
+        'bill': ''
       });
+
+      String documentId = newDocumentRef.id;
+      await _uploadImage(documentId);
+      _progressDialog.hide();
       print("Data saved successfully");
       Navigator.pop(context);
     } catch (e) {
+      _progressDialog.hide();
       print("Error saving data: $e");
+    }
+  }
+
+  Future<void> _uploadImage(String docId) async {
+    try {
+      if (_selectedImage != null) {
+        Reference ref = FirebaseStorage.instance.ref().child('bill/$docId.jpg');
+        UploadTask uploadTask = ref.putFile(File(_selectedImage!.path));
+        TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() => null);
+
+        String imageUrl = await taskSnapshot.ref.getDownloadURL();
+
+        await FirebaseFirestore.instance.collection('daily').doc(docId).update({
+          'bill': imageUrl,
+        });
+      }
+    } catch (e) {
+      print("Error uploading image: $e");
+      // Handle error, show message or take appropriate action
     }
   }
 
@@ -201,7 +257,7 @@ class _CalendersState extends State<Calenders> {
                       SizedBox(
                         width: 30,
                         child: _isIncomeSelected
-                            ? Center(child: Icon(Icons.check_circle))
+                            ? const Center(child: Icon(Icons.check_circle))
                             : null,
                       ),
                       Text(
@@ -211,7 +267,7 @@ class _CalendersState extends State<Calenders> {
                             fontSize: 16,
                             color: _isIncomeSelected
                                 ? null
-                                : Color.fromARGB(255, 135, 135, 135)),
+                                : const Color.fromARGB(255, 135, 135, 135)),
                       )
                     ],
                   ),
@@ -230,7 +286,7 @@ class _CalendersState extends State<Calenders> {
                       SizedBox(
                         width: 30,
                         child: _isExpenseSelected
-                            ? Center(child: Icon(Icons.check_circle))
+                            ? const Center(child: Icon(Icons.check_circle))
                             : null,
                       ),
                       Text(
@@ -240,7 +296,7 @@ class _CalendersState extends State<Calenders> {
                             fontSize: 16,
                             color: _isExpenseSelected
                                 ? null
-                                : Color.fromARGB(255, 135, 135, 135)),
+                                : const Color.fromARGB(255, 135, 135, 135)),
                       )
                     ],
                   ),
@@ -259,7 +315,7 @@ class _CalendersState extends State<Calenders> {
                       SizedBox(
                         width: 30,
                         child: _isGoalSelected
-                            ? Center(child: Icon(Icons.check_circle))
+                            ? const Center(child: Icon(Icons.check_circle))
                             : null,
                       ),
                       Text(
@@ -269,7 +325,7 @@ class _CalendersState extends State<Calenders> {
                             fontSize: 16,
                             color: _isGoalSelected
                                 ? null
-                                : Color.fromARGB(255, 135, 135, 135)),
+                                : const Color.fromARGB(255, 135, 135, 135)),
                       )
                     ],
                   ),
@@ -294,23 +350,19 @@ class _CalendersState extends State<Calenders> {
                   icon: const Icon(Icons.category),
                   label: Text(
                     catButton,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Color.fromARGB(255, 67, 1, 49),
                     ),
                   ),
                 ),
                 ElevatedButton.icon(
                   onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const Roles(),
-                        ));
+                    _pickImage();
                   },
                   icon: const Icon(Icons.camera_alt),
-                  label: const Text(
-                    "Add Photo",
-                    style: TextStyle(
+                  label: Text(
+                    uploadButton,
+                    style: const TextStyle(
                       color: Color.fromARGB(255, 67, 1, 49),
                     ),
                   ),
@@ -433,7 +485,7 @@ class _CalendersState extends State<Calenders> {
                       width: 1, // Adjust the width of the line as needed
                       color: Colors
                           .black, // Adjust the color of the line as needed
-                      margin: EdgeInsets.symmetric(
+                      margin: const EdgeInsets.symmetric(
                           horizontal:
                               8), // Adjust the spacing around the line as needed
                     ),
