@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spendify/about.dart';
 import 'package:spendify/analysis.dart';
-import 'package:spendify/backuprestore.dart';
+import 'package:spendify/blog.dart';
 import 'package:spendify/budget.dart';
+import 'package:spendify/budgetlimit.dart';
 import 'package:spendify/category.dart';
 import 'package:spendify/feedback.dart';
 import 'package:spendify/help.dart';
@@ -106,16 +107,6 @@ class _DashBoardState extends State<DashBoard> {
               },
             ),
             ListTile(
-              title: const Text("Backup and Restore"),
-              onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const BackupRestore(),
-                    ));
-              },
-            ),
-            ListTile(
               title: const Text("Feedback"),
               onTap: () {
                 Navigator.push(
@@ -132,6 +123,16 @@ class _DashBoardState extends State<DashBoard> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => const Help(),
+                    ));
+              },
+            ),
+             ListTile(
+              title: const Text("Blog"),
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const Budgetlimt(),
                     ));
               },
             ),
