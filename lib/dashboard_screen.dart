@@ -128,11 +128,7 @@ class _DashBoardState extends State<DashBoard> {
             ListTile(
               title: const Text("Blog"),
               onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const Budgetlimt(),
-                    ));
+                
               },
             ),
             ListTile(

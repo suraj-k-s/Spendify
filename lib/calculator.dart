@@ -8,6 +8,7 @@ import 'package:math_expressions/math_expressions.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:progress_dialog_null_safe/progress_dialog_null_safe.dart';
+import 'package:spendify/homepage.dart';
 
 class Calenders extends StatefulWidget {
   final String note = '';
@@ -127,7 +128,7 @@ class _CalendersState extends State<Calenders> {
         budget = double.parse(querySnapshot2.docs.first['budget']);
       }
       if (totalExpenses > budget) {
-        saveData();
+        saveData(false);
         showDialog(
             context: context,
             builder: (context) {
@@ -137,22 +138,21 @@ class _CalendersState extends State<Calenders> {
                 actions: <Widget>[
                   TextButton(
                       onPressed: () {
-                        Navigator.of(context).pop();
+                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage(),));
                       },
                       child: Text("OK"))
                 ],
               );
             });
       } else {
-        await saveData();
-        Navigator.pop(context);
+        await saveData(true);
       }
     } catch (e) {
       print("Error checking budget: $e");
     }
   }
 
-  Future<void> saveData() async {
+  Future<void> saveData(bool nav) async {
     print("Category: $selectedCategory");
     _progressDialog.show();
     String formattedDate = DateFormat('yyyy-MM-dd').format(_selectedDate);
@@ -174,6 +174,12 @@ class _CalendersState extends State<Calenders> {
       String documentId = newDocumentRef.id;
       await _uploadImage(documentId);
       _progressDialog.hide();
+      print("Nav: $nav");
+      if(nav == true){
+        print('Hi');
+        Navigator.pop(context);
+        // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage(),));
+      }
       print("Data saved successfully");
     } catch (e) {
       _progressDialog.hide();
@@ -278,8 +284,8 @@ class _CalendersState extends State<Calenders> {
                     if (_type == "expense") {
                       checkDailyBudget();
                     } else {
-                      await saveData();
-                      Navigator.pop(context);
+                      await saveData(true);
+                      
                     }
                   },
                   icon: const Icon(Icons.save),

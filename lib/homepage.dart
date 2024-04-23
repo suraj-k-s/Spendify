@@ -218,7 +218,7 @@ class _HomePageState extends State<HomePage> {
             itemCount: dailyData.length,
             itemBuilder: (context, index) {
               final daily = dailyData[index];
-              final String amount = daily['amount'] ?? '0';
+              String amount = '0';
               final String note = daily['note'] ?? '';
               final timeString = daily['time'] ?? '';
               final formattedTimeString = '$timeString:00';
@@ -231,6 +231,12 @@ class _HomePageState extends State<HomePage> {
               final String category = daily['category'] ?? '';
               final String id = daily['id'] ?? '';
               Color amountColor = type == 'expense' ? Colors.red : Colors.green;
+              if( type == 'expense' ){
+                amount = "-${daily['amount']}";
+              }
+              else{
+                amount = daily['amount'];
+              }
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -264,7 +270,7 @@ class _HomePageState extends State<HomePage> {
                     title: Text(category,
                         style: const TextStyle(fontWeight: FontWeight.bold)),
                     trailing: Text(
-                      "-$amount",
+                      amount,
                       style: TextStyle(fontSize: 18, color: amountColor),
                     ),
                   ),

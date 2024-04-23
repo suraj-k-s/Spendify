@@ -41,12 +41,12 @@ class _BudgetState extends State<Budget> {
               .collection('budget')
               .where('user_id', isEqualTo: userId)
               .get();
+              List<Map<String, dynamic>> data = [];
       for (QueryDocumentSnapshot<Map<String, dynamic>> budgetDocSnapshot
           in budgetSnapshot.docs) {
         double totalExp = 0;
-        List<Map<String, dynamic>> data = [];
+        
         Map<String, dynamic> budget = budgetDocSnapshot.data();
-        print(budget);
         String catId = budget['category_id'];
         budget['id'] = budgetDocSnapshot.id;
         DocumentSnapshot<Map<String, dynamic>> catSnap = await FirebaseFirestore
@@ -57,9 +57,6 @@ class _BudgetState extends State<Budget> {
         if (catSnap.exists) {
           Map<String, dynamic>? catdata = catSnap.data();
           if (catdata != null) {
-            print("CategorY: ${catdata['name']}");
-            print("icon: ${catdata['icon']}");
-            print("type: ${catdata['type']}");
             budget['category'] = catdata['name'];
             budget['icon'] = catdata['icon'];
           }
@@ -76,6 +73,8 @@ class _BudgetState extends State<Budget> {
             in dailyDocsnap.docs) {
           Map<String, dynamic> daily = dailySnapshot.data();
           totalExp += double.parse(daily['amount']);
+          budget['date'] = daily['date'];
+          budget['time'] = daily['time'];
         }
         double val = totalExp / double.parse(budget['budget']);
         if (val > 1) {
@@ -84,7 +83,7 @@ class _BudgetState extends State<Budget> {
           budget['value'] = val;
         }
         print(budget['value']);
-        budget['expense'] = totalExp;
+        budget['expense'] = totalExp.toString();
         data.add(budget);
         print('Data: $data');
       }
@@ -109,22 +108,19 @@ class _BudgetState extends State<Budget> {
           shrinkWrap: true,
           physics: NeverScrollableScrollPhysics(),
           itemBuilder: (context, index) {
-          final budgetDoc = budgetData[index];
-          final String budget = budgetDoc['budget'] ?? '';
-          final String category = budgetDoc['category'] ?? '';
-          final int icon = int.parse(budgetDoc['icon']);
-          final Double value = budgetDoc['value'] ?? 0;
-          final String expense = budgetDoc['expense'] ?? '';
-          final String id = budgetDoc['id'] ?? '';
-        },),
-        // Budgetlimt(),
-        // Padding(
-        //   padding: const EdgeInsets.only(left: 25, right: 25),
-        //   child: LinearProgressIndicator(
-        //     minHeight: 15,
-        //     value: .5,
-        //   ),
-        // ),
+            print('Item building');
+            final budgetDoc = budgetData[index];
+            final String budget = budgetDoc['budget'] ?? '';
+            final String category = budgetDoc['category'] ?? '';
+            final int icon = budgetDoc['icon'] ?? 0;
+            final double value = budgetDoc['value'];
+            final String expense = budgetDoc['expense'] ?? '';
+            final String id = budgetDoc['id'] ?? '';
+            final String date = budgetDoc['date'] ?? '';
+            final String time = budgetDoc['time'] ?? '';
+            return Budgetlimt(date: date, time: time, exp: expense, budget: budget, id: id, category: category, icon: icon, value: value);
+          },
+        ),
         Divider(),
         StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance

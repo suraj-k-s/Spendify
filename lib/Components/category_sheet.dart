@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -9,6 +10,8 @@ class CategoryBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+      final userId = user?.uid;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -23,6 +26,7 @@ class CategoryBottomSheet extends StatelessWidget {
             stream: FirebaseFirestore.instance
                 .collection('categories')
                 .where('type', isEqualTo: type)
+                .where('userId', isEqualTo: userId)
                 .snapshots(),
             builder: (context, snapshot) {
               if (!snapshot.hasData) {

@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 
 class Budgetlimt extends StatefulWidget {
+  final String date;
+  final String time;
+  final String exp;
+  final String budget;
+  final String id;
+  final String category;
+  final int icon;
+  final double value;
   const Budgetlimt({
-    super.key,
-    // required this.width,
-    // required this.height,
-    // required this.progress
+    super.key, required this.date, required this.time, required this.exp, required this.budget, required this.id, required this.category, required this.icon, required this.value,
+   
   });
-  // final double width;
-  // final double height;
-  // final double progress;
+ 
   @override
   State<Budgetlimt> createState() => _BudgetlimtState();
 }
@@ -17,14 +21,15 @@ class Budgetlimt extends StatefulWidget {
 class _BudgetlimtState extends State<Budgetlimt> {
   @override
   Widget build(BuildContext context) {
+    double remaining = double.parse(widget.budget) - double.parse(widget.exp);
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
           children: [
             const SizedBox(height: 30),
-            const Text("Budgeted Categories:Apr,2024"),
+            Text("Budgeted Categories: ${widget.date}"),
             const Divider(),
-            const Row(
+            Row(
               children: [
                 CircleAvatar(
                   backgroundColor: Color.fromARGB(255, 196, 115, 203),
@@ -37,21 +42,21 @@ class _BudgetlimtState extends State<Budgetlimt> {
                     Column(
                       children: [
                         Text(
-                          "Beauty",
+                          widget.category,
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        Text("Limit: 5,000.00"),
+                        Text("Limit: ${widget.budget}"),
                         SizedBox(
                           width: 10,
                         ),
                         SizedBox(
                           height: 10,
                         ),
-                        Text("Spent: 2,500.00"),
+                        Text("Spent: ${widget.exp}"),
                         SizedBox(
                           height: 10,
                         ),
-                        Text("Remaining:2,500.00")
+                        Text("Remaining: ${remaining.toString()}")
                       ],
                     ),
                     Column(
@@ -62,43 +67,19 @@ class _BudgetlimtState extends State<Budgetlimt> {
                         SizedBox(
                           height: 10,
                         ),
-                        Text("Apr,2024")
                       ],
                     )
                   ],
                 ),
               ],
             ),
-            Container(
-              width: 20,
-              height: 10,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Stack(
-                children: [
-                  Container(
-                    width: 20 * 15,
-                    height: 10,
-                    decoration: BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.center,
-                    child: Text(
-                      '${(15 * 100).toInt()}%',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  )
-                ],
-              ),
-            ),
+            Padding(
+          padding: const EdgeInsets.only(left: 25, right: 25),
+          child: LinearProgressIndicator(
+            minHeight: 15,
+            value: widget.value,
+          ),
+        ),
           ],
         ),
       ),
