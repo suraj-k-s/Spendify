@@ -9,8 +9,6 @@ class CategoryBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String selectedCat;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

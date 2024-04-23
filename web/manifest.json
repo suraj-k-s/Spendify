@@ -1,6 +1,6 @@
 {
-    "name": "nu_parent",
-    "short_name": "nu_parent",
+    "name": "spendify",
+    "short_name": "spendify",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

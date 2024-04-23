@@ -22,11 +22,11 @@ class _ChartEState extends State<ChartE> {
   bool dataLoaded = false;
 
   Future<void> fetchDataFromFirestore() async {
-    int year = widget.selectedDate.year.toInt();
-    int month = widget.selectedDate.month.toInt();
+    // int year = widget.selectedDate.year.toInt();
+    // int month = widget.selectedDate.month.toInt();
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     User? user = FirebaseAuth.instance.currentUser;
-    
+
     if (user != null) {
       QuerySnapshot dailySnapshot = await firestore
           .collection('daily')

@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:spendify/Components/category_sheet.dart';
@@ -40,6 +39,7 @@ class _CalendersState extends State<Calenders> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   XFile? _selectedImage;
   late ProgressDialog _progressDialog;
+  final DateFormat dateFormat = DateFormat('yyyy-MM-dd');
 
   @override
   void initState() {
@@ -98,6 +98,8 @@ class _CalendersState extends State<Calenders> {
       DateTime now = DateTime.now();
       DateTime firstDayOfMonth = DateTime(now.year, now.month, 1);
       DateTime lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
+      print("First: $firstDayOfMonth");
+      print("Last: $lastDayOfMonth");
       final user = FirebaseAuth.instance.currentUser;
       final userId = user?.uid;
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
@@ -108,10 +110,11 @@ class _CalendersState extends State<Calenders> {
           .where('date', isLessThanOrEqualTo: lastDayOfMonth.toString())
           .get();
       double totalExpenses = 0.0;
+      print("Length: ${querySnapshot.docs.length}");
       for (var doc in querySnapshot.docs) {
         totalExpenses += double.parse(doc['amount']);
       }
-      // print(totalExpenses);
+      print("Total Exp: $totalExpenses");
       double budget = 0;
       QuerySnapshot<Map<String, dynamic>> querySnapshot2 =
           await FirebaseFirestore.instance
@@ -123,7 +126,7 @@ class _CalendersState extends State<Calenders> {
       if (querySnapshot2.docs.isNotEmpty) {
         budget = double.parse(querySnapshot2.docs.first['budget']);
       }
-      if( totalExpenses > budget) {
+      if (totalExpenses > budget) {
         saveData();
         showDialog(
             context: context,
@@ -140,8 +143,7 @@ class _CalendersState extends State<Calenders> {
                 ],
               );
             });
-      }
-      else{
+      } else {
         await saveData();
         Navigator.pop(context);
       }

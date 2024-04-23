@@ -10,6 +10,6 @@ class Blog extends StatefulWidget {
 class _BlogState extends State<Blog> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold();
+    return const Scaffold();
   }
 }

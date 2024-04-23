@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:spendify/Components/add_budget.dart';
@@ -15,6 +17,86 @@ class Budget extends StatefulWidget {
 
 class _BudgetState extends State<Budget> {
   @override
+  void initState() {
+    super.initState();
+    getBudget();
+  }
+
+  List<Map<String, dynamic>> budgetData = [];
+
+  Future<void> getBudget() async {
+    final user = FirebaseAuth.instance.currentUser;
+    final userId = user?.uid;
+    List<Map<String, dynamic>> data = [];
+    DateTime now = DateTime.now();
+    DateTime firstDayOfMonth = DateTime(now.year, now.month, 1);
+    DateTime lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
+    String formattedFirstDayOfMonth =
+        '${firstDayOfMonth.year}-${firstDayOfMonth.month.toString().padLeft(2, '0')}-01';
+    String formattedLastDayOfMonth =
+        '${lastDayOfMonth.year}-${lastDayOfMonth.month.toString().padLeft(2, '0')}-${lastDayOfMonth.day.toString().padLeft(2, '0')}';
+    try {
+      QuerySnapshot<Map<String, dynamic>> budgetSnapshot =
+          await FirebaseFirestore.instance
+              .collection('budget')
+              .where('user_id', isEqualTo: userId)
+              .get();
+      for (QueryDocumentSnapshot<Map<String, dynamic>> budgetDocSnapshot
+          in budgetSnapshot.docs) {
+        double totalExp = 0;
+        List<Map<String, dynamic>> data = [];
+        Map<String, dynamic> budget = budgetDocSnapshot.data();
+        print(budget);
+        String catId = budget['category_id'];
+        budget['id'] = budgetDocSnapshot.id;
+        DocumentSnapshot<Map<String, dynamic>> catSnap = await FirebaseFirestore
+            .instance
+            .collection('categories')
+            .doc(catId)
+            .get();
+        if (catSnap.exists) {
+          Map<String, dynamic>? catdata = catSnap.data();
+          if (catdata != null) {
+            print("CategorY: ${catdata['name']}");
+            print("icon: ${catdata['icon']}");
+            print("type: ${catdata['type']}");
+            budget['category'] = catdata['name'];
+            budget['icon'] = catdata['icon'];
+          }
+        }
+        QuerySnapshot<Map<String, dynamic>> dailyDocsnap =
+            await FirebaseFirestore.instance
+                .collection('daily')
+                .where('user_id', isEqualTo: userId)
+                .where('date', isGreaterThanOrEqualTo: formattedFirstDayOfMonth)
+                .where('date', isLessThanOrEqualTo: formattedLastDayOfMonth)
+                .where('category_id', isEqualTo: catId)
+                .get();
+        for (QueryDocumentSnapshot<Map<String, dynamic>> dailySnapshot
+            in dailyDocsnap.docs) {
+          Map<String, dynamic> daily = dailySnapshot.data();
+          totalExp += double.parse(daily['amount']);
+        }
+        double val = totalExp / double.parse(budget['budget']);
+        if (val > 1) {
+          budget['value'] = 1;
+        } else {
+          budget['value'] = val;
+        }
+        print(budget['value']);
+        budget['expense'] = totalExp;
+        data.add(budget);
+        print('Data: $data');
+      }
+      setState(() {
+        budgetData = data;
+      });
+    } catch (e) {
+      print("Error getting budget: $e");
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     final userId = user?.uid;
@@ -22,8 +104,28 @@ class _BudgetState extends State<Budget> {
       shrinkWrap: true,
       children: [
         const Text('Budget'),
+        ListView.builder(
+          itemCount: budgetData.length,
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          itemBuilder: (context, index) {
+          final budgetDoc = budgetData[index];
+          final String budget = budgetDoc['budget'] ?? '';
+          final String category = budgetDoc['category'] ?? '';
+          final int icon = int.parse(budgetDoc['icon']);
+          final Double value = budgetDoc['value'] ?? 0;
+          final String expense = budgetDoc['expense'] ?? '';
+          final String id = budgetDoc['id'] ?? '';
+        },),
         // Budgetlimt(),
-        // Divider(),
+        // Padding(
+        //   padding: const EdgeInsets.only(left: 25, right: 25),
+        //   child: LinearProgressIndicator(
+        //     minHeight: 15,
+        //     value: .5,
+        //   ),
+        // ),
+        Divider(),
         StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
               .collection('categories')
@@ -48,24 +150,22 @@ class _BudgetState extends State<Budget> {
               shrinkWrap: true,
               itemCount: snapshot.data!.docs.length,
               itemBuilder: (context, index) {
-                
                 var category =
                     snapshot.data!.docs[index].data() as Map<String, dynamic>;
-                    
+
                 final docId = snapshot.data!.docs[index].id;
                 final int iconName = category['icon'];
                 final random = Random();
-                      final randomColor = Color.fromARGB(
-                        255,
-                        (random.nextInt(64) + 192), // Red value between 192 and 255
-                        (random.nextInt(64) +
-                            192), // Green value between 192 and 255
-                        (random.nextInt(64) +
-                            192), // Blue value between 192 and 255
-                      );
+                final randomColor = Color.fromARGB(
+                  255,
+                  (random.nextInt(64) + 192), // Red value between 192 and 255
+                  (random.nextInt(64) + 192), // Green value between 192 and 255
+                  (random.nextInt(64) + 192), // Blue value between 192 and 255
+                );
                 return ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: randomColor, // Provide a default color if color is null
+                    backgroundColor:
+                        randomColor, // Provide a default color if color is null
                     child: Icon(
                       IconData(iconName, fontFamily: 'MaterialIcons'),
                       size: 24,
@@ -81,7 +181,11 @@ class _BudgetState extends State<Budget> {
                       showDialog(
                         context: context,
                         builder: (BuildContext context) {
-                          return AddBudget(docId: docId, category: category['name'], icon: iconName,); // Using the MyDialog widget
+                          return AddBudget(
+                            docId: docId,
+                            category: category['name'],
+                            icon: iconName,
+                          ); // Using the MyDialog widget
                         },
                       );
                     },

@@ -53,7 +53,7 @@ class _EditProfileState extends State<EditProfile> {
         // Update only if there are changes
 
         // Check if name is null and set it to an empty string
-        final updatedName = nameController.text ?? '';
+        final updatedName = nameController.text;
 
         await userDoc.update({
           'name': updatedName,
