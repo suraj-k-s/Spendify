@@ -1,8 +1,4 @@
-import 'package:flutter/material.dart';
-
-// Mock data for income and expense categories
-const List<Map<String, dynamic>> HelpData = [
-  // Income Categories
+const List<Map<String, dynamic>> helpData = [
   {
     'QUESTION': 'How can I add expenses and income in the app?',
     'ANSWER':  'To add your expenses and income , simply navigate to the Expenses section and Income section of the app and enter the amount spent along with a brief description of the purchase. You can categorize expenses and imcomes to easily identify where your money is going.'

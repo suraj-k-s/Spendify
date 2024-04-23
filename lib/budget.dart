@@ -22,8 +22,8 @@ class _BudgetState extends State<Budget> {
       shrinkWrap: true,
       children: [
         const Text('Budget'),
-        Budgetlimt(),
-        Divider(),
+        // Budgetlimt(),
+        // Divider(),
         StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
               .collection('categories')

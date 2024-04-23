@@ -16,11 +16,11 @@ class _HelpState extends State<Help> {
     return Scaffold(
       appBar: AppBar(),
      body: ListView.builder(
-      itemCount:HelpData.length,
+      itemCount:helpData.length,
       shrinkWrap: true,
        itemBuilder: (context, index) {
-        final String question = HelpData[index]['QUESTION'];
-        final String answer = HelpData[index]['ANSWER'];
+        final String question = helpData[index]['QUESTION'];
+        final String answer = helpData[index]['ANSWER'];
 
       return ListTile(
         title: Text(question),

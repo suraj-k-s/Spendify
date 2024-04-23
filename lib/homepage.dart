@@ -19,52 +19,53 @@ class _HomePageState extends State<HomePage> {
   double totalIncome = 0.0;
   late Stream<QuerySnapshot> _dailyDataStream;
   DateTime? _previousDate;
+  final DateFormat dateFormat = DateFormat('yyyy-MM-dd');
+  List<Map<String, dynamic>> dailyData = [];
 
   @override
   void initState() {
     super.initState();
-    _initDailyDataStream();
-    getTotal();
-  }
-
-  void _initDailyDataStream() {
-    _dailyDataStream = getDailyDataStream();
+    getDaily();
   }
 
   void _changeMonth(int increment) {
     setState(() {
       _selectedDate =
           DateTime(_selectedDate.year, _selectedDate.month + increment);
-      _initDailyDataStream();
-      getTotal();
     });
+    getDaily();
   }
 
-  Future<void> getTotal() async {
-    int year = _selectedDate.year.toInt();
-    int month = _selectedDate.month.toInt();
-    double total = 0;
-    double exp = 0;
-    double inc = 0;
-    final user = FirebaseAuth.instance.currentUser;
-    final userId = user?.uid;
-    final startDate = DateTime(year, month, 1);
-    final endDate = DateTime(year, month + 1, 1);
+  Future<void> getDaily() async {
     try {
+      double total = 0;
+      double exp = 0;
+      double inc = 0;
+      final user = FirebaseAuth.instance.currentUser;
+      final userId = user?.uid;
+      int year = _selectedDate.year.toInt();
+      int month = _selectedDate.month.toInt();
+      final startDate = DateTime(year, month, 1);
+      final endDate = DateTime(year, month + 1, 1);
+      final String startDateString = dateFormat.format(startDate);
+      final String endDateString =
+          dateFormat.format(endDate.add(Duration(days: 1)));
+      print("Start $startDate");
+      print("End $endDate");
+      List<Map<String, dynamic>> daily = [];
       QuerySnapshot<Map<String, dynamic>> totalSnapshot =
           await FirebaseFirestore.instance
               .collection('daily')
               .where('user_id', isEqualTo: userId)
-              .where('date', isGreaterThanOrEqualTo: startDate)
-              .where('date', isLessThan: endDate)
+              .where('date', isGreaterThanOrEqualTo: startDateString)
+              .where('date', isLessThan: endDateString)
               .get();
-
-      // Process the data in totalSnapshot
       for (QueryDocumentSnapshot<Map<String, dynamic>> documentSnapshot
           in totalSnapshot.docs) {
-        // Access data from each document
         Map<String, dynamic> data = documentSnapshot.data();
+        print(data);
         double amt = double.parse(data['amount']);
+        data['id'] = documentSnapshot.id;
         DocumentSnapshot<Map<String, dynamic>> catSnap = await FirebaseFirestore
             .instance
             .collection('categories')
@@ -72,13 +73,27 @@ class _HomePageState extends State<HomePage> {
             .get();
         if (catSnap.exists) {
           Map<String, dynamic>? catdata = catSnap.data();
+          if (catdata != null) {
+            print("CategorY: ${catdata['name']}");
+            print("icon: ${catdata['icon']}");
+            print("type: ${catdata['type']}");
+            data['category'] = catdata['name'];
+            data['icon'] = catdata['icon'];
+            data['type'] = catdata['type'];
+          }
+
           if (catdata?['type'] == 'income') {
             inc += amt;
           } else {
             exp += amt;
           }
         }
+        daily.add(data);
       }
+      print(daily);
+      setState(() {
+        dailyData = daily;
+      });
       total = inc - exp;
       setState(() {
         totalAmt = total;
@@ -86,24 +101,8 @@ class _HomePageState extends State<HomePage> {
         totalIncome = inc;
       });
     } catch (e) {
-      print("Error fetching data: $e");
+      print("Error Daily: $e");
     }
-  }
-
-  Stream<QuerySnapshot> getDailyDataStream() {
-    int year = _selectedDate.year.toInt();
-    int month = _selectedDate.month.toInt();
-    final user = FirebaseAuth.instance.currentUser;
-    final userId = user?.uid;
-    final startDate = DateTime(year, month, 1);
-    final endDate = DateTime(year, month + 1, 1);
-
-    return FirebaseFirestore.instance
-        .collection('daily')
-        .where('user_id', isEqualTo: userId)
-        .where('date', isGreaterThanOrEqualTo: startDate.toString())
-        .where('date', isLessThan: endDate.toString())
-        .snapshots();
   }
 
   @override
@@ -215,64 +214,27 @@ class _HomePageState extends State<HomePage> {
         const SizedBox(
           height: 15,
         ),
-        StreamBuilder<QuerySnapshot>(
-          stream: _dailyDataStream,
-          builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              return Text('Error: ${snapshot.error}');
-            }
-
-            if (!snapshot.hasData) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            final documents = snapshot.data!.docs;
-            return ListView.builder(
-              shrinkWrap: true,
-              itemCount: documents.length,
-              itemBuilder: (context, index) {
-                final data = documents[index].data() as Map<String, dynamic>;
-                final DateTime date = DateTime.parse(data['date']);
-                if (_previousDate != null &&
-                    _previousDate!.isAtSameMomentAs(date)) {
-                  return const SizedBox.shrink(); // Skip printing date
-                }
-                _previousDate = date;
-
-                final String amount = data['amount'] ?? '0';
-                final String categoryId = data['category_id'];
-                final String note = data['note'];
-                final timeString = data['time'];
+        ListView.builder(
+          shrinkWrap: true,
+          itemCount: dailyData.length,
+          itemBuilder: (context, index) {
+            final daily = dailyData[index];
+            final String amount = daily['amount'] ?? '0';
+                final String categoryId = daily['category_id'] ?? '';
+                final String note = daily['note'] ?? '';
+                final timeString = daily['time'] ?? '';
                 final formattedTimeString = '$timeString:00';
                 final time = DateFormat('HH:mm:ss').parse(formattedTimeString);
-                final String bill = data['bill'] ?? '';
-                final String id = documents[index].id;
-
-                return FutureBuilder<DocumentSnapshot>(
-                  future: FirebaseFirestore.instance
-                      .collection('categories')
-                      .doc(categoryId)
-                      .get(),
-                  builder: (context, categorySnapshot) {
-                    if (categorySnapshot.connectionState ==
-                        ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    if (categorySnapshot.hasError) {
-                      return Text('Error: ${categorySnapshot.error}');
-                    }
-
-                    final categoryData =
-                        categorySnapshot.data!.data() as Map<String, dynamic>;
-                    final int iconName = categoryData['icon'];
-                    final String type = categoryData['type'];
-                    final String category = categoryData['name'];
-
-                    // Determine the color based on expense or income
+                final DateTime date = DateTime.parse(daily['date']);
+                final String bill = daily['bill'] ?? '';
+                // final String id = documents[index].id;
+                 final int iconName = daily['icon'] ?? '';
+                    final String type = daily['type'] ?? '';
+                    final String category = daily['name'] ?? '';
+                    final String id = daily['id'] ?? '';
                     Color amountColor =
                         type == 'expense' ? Colors.red : Colors.green;
-
-                    return Column(
+                        return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         if (_previousDate != null)
@@ -311,10 +273,6 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ],
                     );
-                  },
-                );
-              },
-            );
           },
         )
       ],

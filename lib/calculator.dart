@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:spendify/Components/category_sheet.dart';
@@ -92,7 +93,65 @@ class _CalendersState extends State<Calenders> {
     });
   }
 
+  Future<void> checkDailyBudget() async {
+    try {
+      DateTime now = DateTime.now();
+      DateTime firstDayOfMonth = DateTime(now.year, now.month, 1);
+      DateTime lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
+      final user = FirebaseAuth.instance.currentUser;
+      final userId = user?.uid;
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('daily')
+          .where('user_id', isEqualTo: userId)
+          .where('category_id', isEqualTo: selectedCategory)
+          .where('date', isGreaterThanOrEqualTo: firstDayOfMonth.toString())
+          .where('date', isLessThanOrEqualTo: lastDayOfMonth.toString())
+          .get();
+      double totalExpenses = 0.0;
+      for (var doc in querySnapshot.docs) {
+        totalExpenses += double.parse(doc['amount']);
+      }
+      // print(totalExpenses);
+      double budget = 0;
+      QuerySnapshot<Map<String, dynamic>> querySnapshot2 =
+          await FirebaseFirestore.instance
+              .collection('budget')
+              .where('category_id', isEqualTo: selectedCategory)
+              .where('user_id', isEqualTo: userId)
+              .limit(1)
+              .get();
+      if (querySnapshot2.docs.isNotEmpty) {
+        budget = double.parse(querySnapshot2.docs.first['budget']);
+      }
+      if( totalExpenses > budget) {
+        saveData();
+        showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: Text("Budget Exceeded"),
+                content: Text("You have exceeded your daily budget"),
+                actions: <Widget>[
+                  TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text("OK"))
+                ],
+              );
+            });
+      }
+      else{
+        await saveData();
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      print("Error checking budget: $e");
+    }
+  }
+
   Future<void> saveData() async {
+    print("Category: $selectedCategory");
     _progressDialog.show();
     String formattedDate = DateFormat('yyyy-MM-dd').format(_selectedDate);
     String formattedTime = '${_selectedTime.hour}:${_selectedTime.minute}';
@@ -114,7 +173,6 @@ class _CalendersState extends State<Calenders> {
       await _uploadImage(documentId);
       _progressDialog.hide();
       print("Data saved successfully");
-      Navigator.pop(context);
     } catch (e) {
       _progressDialog.hide();
       print("Error saving data: $e");
@@ -214,8 +272,13 @@ class _CalendersState extends State<Calenders> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 ElevatedButton.icon(
-                  onPressed: () {
-                    saveData();
+                  onPressed: () async {
+                    if (_type == "expense") {
+                      checkDailyBudget();
+                    } else {
+                      await saveData();
+                      Navigator.pop(context);
+                    }
                   },
                   icon: const Icon(Icons.save),
                   label: const Text(
