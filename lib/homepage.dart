@@ -33,7 +33,7 @@ class _HomePageState extends State<HomePage> {
           DateTime(_selectedDate.year, _selectedDate.month + increment);
     });
     getDaily();
-  }
+  } 
 
   Future<void> getDaily() async {
     try {

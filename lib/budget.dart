@@ -41,11 +41,11 @@ class _BudgetState extends State<Budget> {
               .collection('budget')
               .where('user_id', isEqualTo: userId)
               .get();
-              List<Map<String, dynamic>> data = [];
+      List<Map<String, dynamic>> data = [];
       for (QueryDocumentSnapshot<Map<String, dynamic>> budgetDocSnapshot
           in budgetSnapshot.docs) {
         double totalExp = 0;
-        
+
         Map<String, dynamic> budget = budgetDocSnapshot.data();
         String catId = budget['category_id'];
         budget['id'] = budgetDocSnapshot.id;
@@ -78,7 +78,8 @@ class _BudgetState extends State<Budget> {
         }
         double val = totalExp / double.parse(budget['budget']);
         if (val > 1) {
-          budget['value'] = 1;
+          double temp = 1;
+          budget['value'] = temp;
         } else {
           budget['value'] = val;
         }
@@ -112,13 +113,20 @@ class _BudgetState extends State<Budget> {
             final String budget = budgetDoc['budget'] ?? '';
             final String category = budgetDoc['category'] ?? '';
             final int icon = budgetDoc['icon'] ?? 0;
-            final int value = budgetDoc['value'];
-            print(budgetDoc['value'].runtimeType);
+            final double value = budgetDoc['value'];
             final String expense = budgetDoc['expense'].toString();
             final String id = budgetDoc['id'] ?? '';
             final String date = budgetDoc['date'] ?? '';
             final String time = budgetDoc['time'] ?? '';
-            return Budgetlimt(date: date, time: time, exp: expense, budget: budget, id: id, category: category, icon: icon, value: value);
+            return Budgetlimt(
+                date: date,
+                time: time,
+                exp: expense,
+                budget: budget,
+                id: id,
+                category: category,
+                icon: icon,
+                value: value);
           },
         ),
         const Divider(),

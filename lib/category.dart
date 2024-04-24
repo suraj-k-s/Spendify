@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -19,10 +17,9 @@ class Categories extends StatelessWidget {
     Future<void> deleteItem(String id) async {
       try {
         await FirebaseFirestore.instance
-            .collection('your_collection')
+            .collection('categories')
             .doc(id)
             .delete();
-        // Show toast notification after successful deletion
         Fluttertoast.showToast(
           msg: "Data deleted successfully",
           toastLength: Toast.LENGTH_SHORT,

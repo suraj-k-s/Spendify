@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore package
+import 'package:intl/intl.dart';
 import 'package:pie_chart/pie_chart.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -13,6 +14,7 @@ class ChartE extends StatefulWidget {
 
 class _ChartEState extends State<ChartE> {
   Map<String, double> dataMap = {};
+  final DateFormat dateFormat = DateFormat('yyyy-MM-dd');
   final colorList = [
     Colors.greenAccent,
     Colors.blueAccent,
@@ -22,8 +24,13 @@ class _ChartEState extends State<ChartE> {
   bool dataLoaded = false;
 
   Future<void> fetchDataFromFirestore() async {
-    // int year = widget.selectedDate.year.toInt();
-    // int month = widget.selectedDate.month.toInt();
+    int year = widget.selectedDate.year.toInt();
+    int month = widget.selectedDate.month.toInt();
+     final startDate = DateTime(year, month, 1);
+      final endDate = DateTime(year, month + 1, 1);
+      final String startDateString = dateFormat.format(startDate);
+      final String endDateString =
+          dateFormat.format(endDate.add(const Duration(days: 1)));
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     User? user = FirebaseAuth.instance.currentUser;
 
@@ -31,6 +38,8 @@ class _ChartEState extends State<ChartE> {
       QuerySnapshot dailySnapshot = await firestore
           .collection('daily')
           .where('user_id', isEqualTo: user.uid)
+          .where('date', isGreaterThanOrEqualTo: startDateString)
+              .where('date', isLessThan: endDateString)
           .get();
       dataMap.clear();
       for (QueryDocumentSnapshot dailyDoc in dailySnapshot.docs) {
