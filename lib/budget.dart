@@ -106,22 +106,22 @@ class _BudgetState extends State<Budget> {
         ListView.builder(
           itemCount: budgetData.length,
           shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
+          physics: const NeverScrollableScrollPhysics(),
           itemBuilder: (context, index) {
-            print('Item building');
             final budgetDoc = budgetData[index];
             final String budget = budgetDoc['budget'] ?? '';
             final String category = budgetDoc['category'] ?? '';
             final int icon = budgetDoc['icon'] ?? 0;
-            final double value = budgetDoc['value'];
-            final String expense = budgetDoc['expense'] ?? '';
+            final int value = budgetDoc['value'];
+            print(budgetDoc['value'].runtimeType);
+            final String expense = budgetDoc['expense'].toString();
             final String id = budgetDoc['id'] ?? '';
             final String date = budgetDoc['date'] ?? '';
             final String time = budgetDoc['time'] ?? '';
             return Budgetlimt(date: date, time: time, exp: expense, budget: budget, id: id, category: category, icon: icon, value: value);
           },
         ),
-        Divider(),
+        const Divider(),
         StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
               .collection('categories')
