@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:spendify/Components/filtersheet.dart';
@@ -13,24 +15,109 @@ class Analysis extends StatefulWidget {
 }
 
 class _AnalysisState extends State<Analysis> {
+  Map<String, double> dataExp = {};
+  Map<String, double> dataInc = {};
   DateTime _selectedDate = DateTime.now();
+  double totalAmt = 0.0;
+  double totalExpenses = 0.0;
+  double totalIncome = 0.0;
+  final DateFormat dateFormat = DateFormat('yyyy-MM-dd');
   void _changeMonth(int increment) {
     setState(() {
       _selectedDate =
           DateTime(_selectedDate.year, _selectedDate.month + increment);
     });
+    getDaily();
+  }
+
+  bool dataLoaded = false;
+
+  Future<void> getDaily() async {
+    double total = 0;
+    double exp = 0;
+    double inc = 0;
+    int year = _selectedDate.year.toInt();
+    int month = _selectedDate.month.toInt();
+    final startDate = DateTime(year, month, 1);
+    final endDate = DateTime(year, month + 1, 1);
+    final String startDateString = dateFormat.format(startDate);
+    final String endDateString =
+        dateFormat.format(endDate.add(const Duration(days: 1)));
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      QuerySnapshot dailySnapshot = await firestore
+          .collection('daily')
+          .where('user_id', isEqualTo: user.uid)
+          .where('date', isGreaterThanOrEqualTo: startDateString)
+          .where('date', isLessThan: endDateString)
+          .get();
+      dataExp.clear();
+      dataInc.clear();
+      for (QueryDocumentSnapshot dailyDoc in dailySnapshot.docs) {
+        String categoryId = dailyDoc['category_id'];
+        double amount = double.parse(dailyDoc['amount']);
+
+        // Retrieve category information from the "categories" collection
+        DocumentSnapshot categorySnapshot =
+            await firestore.collection('categories').doc(categoryId).get();
+
+        // Check if the category document exists and if it is an expense category
+        if (categorySnapshot.exists && categorySnapshot['type'] == 'expense') {
+          String categoryName = categorySnapshot['name'];
+          if (!dataExp.containsKey(categoryName)) {
+            dataExp[categoryName] = amount;
+          } else {
+            dataExp[categoryName] = dataExp[categoryName]! + amount;
+          }
+        }
+        if (categorySnapshot.exists && categorySnapshot['type'] == 'income') {
+          String categoryName = categorySnapshot['name'];
+          if (!dataInc.containsKey(categoryName)) {
+            dataInc[categoryName] = amount;
+          } else {
+            dataInc[categoryName] = dataInc[categoryName]! + amount;
+          }
+        }
+        if (categorySnapshot['type'] == 'income') {
+          inc += amount;
+        } else {
+          exp += amount;
+        }
+      }
+      total = inc - exp;
+      setState(() {
+        totalAmt = total;
+        totalExpenses = exp;
+        totalIncome = inc;
+        dataLoaded = true;
+      });
+    }
   }
 
   late List<Widget> _pages;
+
+  void updateSelectedDate(DateTime newDate, Function callback) {
+    setState(() {
+      _selectedDate = newDate;
+    });
+    callback();
+  }
 
   @override
   void initState() {
     _pages = [
       Calendar(),
-      ChartE(selectedDate: _selectedDate),
-      ChartI(),
+      ChartE(
+        data: dataExp,
+      ),
+      ChartI(
+        data: dataInc,
+      ),
     ];
     super.initState();
+    getDaily();
   }
 
   int _currentIndex = 0;
@@ -94,7 +181,7 @@ class _AnalysisState extends State<Analysis> {
             ),
           ],
         ),
-        const Row(
+        Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             Column(
@@ -104,7 +191,7 @@ class _AnalysisState extends State<Analysis> {
                   style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
                 ),
                 Text(
-                  "5000",
+                  totalExpenses.toString(),
                   style: TextStyle(color: Colors.black),
                 ),
               ],
@@ -120,7 +207,7 @@ class _AnalysisState extends State<Analysis> {
                   style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
                 ),
                 Text(
-                  "6000",
+                  totalIncome.toString(),
                   style: TextStyle(color: Colors.black),
                 ),
               ],
@@ -133,7 +220,7 @@ class _AnalysisState extends State<Analysis> {
                   style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
                 ),
                 Text(
-                  "11000",
+                  totalAmt.toString(),
                   style: TextStyle(color: Colors.black),
                 ),
               ],

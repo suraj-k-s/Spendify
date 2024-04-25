@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore package
 import 'package:intl/intl.dart';
 import 'package:pie_chart/pie_chart.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class ChartE extends StatefulWidget {
-  final DateTime selectedDate;
-  const ChartE({super.key, required this.selectedDate});
+  final Map<String, double> data;
+  const ChartE({super.key, required this.data});
 
   @override
   State<ChartE> createState() => _ChartEState();
@@ -23,53 +21,17 @@ class _ChartEState extends State<ChartE> {
   ];
   bool dataLoaded = false;
 
-  Future<void> fetchDataFromFirestore() async {
-    int year = widget.selectedDate.year.toInt();
-    int month = widget.selectedDate.month.toInt();
-     final startDate = DateTime(year, month, 1);
-      final endDate = DateTime(year, month + 1, 1);
-      final String startDateString = dateFormat.format(startDate);
-      final String endDateString =
-          dateFormat.format(endDate.add(const Duration(days: 1)));
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    User? user = FirebaseAuth.instance.currentUser;
-
-    if (user != null) {
-      QuerySnapshot dailySnapshot = await firestore
-          .collection('daily')
-          .where('user_id', isEqualTo: user.uid)
-          .where('date', isGreaterThanOrEqualTo: startDateString)
-              .where('date', isLessThan: endDateString)
-          .get();
-      dataMap.clear();
-      for (QueryDocumentSnapshot dailyDoc in dailySnapshot.docs) {
-        String categoryId = dailyDoc['category_id'];
-        double amount = double.parse(dailyDoc['amount']);
-
-        // Retrieve category information from the "categories" collection
-        DocumentSnapshot categorySnapshot =
-            await firestore.collection('categories').doc(categoryId).get();
-
-        // Check if the category document exists and if it is an expense category
-        if (categorySnapshot.exists && categorySnapshot['type'] == 'expense') {
-          String categoryName = categorySnapshot['name'];
-          if (!dataMap.containsKey(categoryName)) {
-            dataMap[categoryName] = amount;
-          } else {
-            dataMap[categoryName] = dataMap[categoryName]! + amount;
-          }
-        }
-      }
-      setState(() {
-        dataLoaded = true;
-      });
-    }
+  Future<void> fetchData() async {
+    dataMap = widget.data;
+    setState(() {
+      dataLoaded = true;
+    });
   }
 
   @override
   void initState() {
     super.initState();
-    fetchDataFromFirestore();
+    fetchData();
   }
 
   @override

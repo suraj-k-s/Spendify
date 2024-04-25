@@ -4,7 +4,8 @@ import 'package:pie_chart/pie_chart.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ChartI extends StatefulWidget {
-  const ChartI({super.key});
+  final Map<String, double> data;
+  const ChartI({super.key, required this.data});
 
   @override
   State<ChartI> createState() => _ChartState();
@@ -20,43 +21,17 @@ class _ChartState extends State<ChartI> {
   ];
   bool dataLoaded = false;
 
-  Future<void> fetchDataFromFirestore() async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      QuerySnapshot dailySnapshot = await firestore
-          .collection('daily')
-          .where('user_id', isEqualTo: user.uid)
-          .get();
-      dataMap.clear();
-      for (QueryDocumentSnapshot dailyDoc in dailySnapshot.docs) {
-        String categoryId = dailyDoc['category_id'];
-        double amount = double.parse(dailyDoc['amount']);
-
-        // Retrieve category information from the "categories" collection
-        DocumentSnapshot categorySnapshot =
-            await firestore.collection('categories').doc(categoryId).get();
-
-        // Check if the category document exists and if it is an expense category
-        if (categorySnapshot.exists && categorySnapshot['type'] == 'income') {
-          String categoryName = categorySnapshot['name'];
-          if (!dataMap.containsKey(categoryName)) {
-            dataMap[categoryName] = amount;
-          } else {
-            dataMap[categoryName] = dataMap[categoryName]! + amount;
-          }
-        }
-      }
-      setState(() {
-        dataLoaded = true;
-      });
-    }
+  Future<void> fetchData() async {
+    dataMap = widget.data;
+    setState(() {
+      dataLoaded = true;
+    });
   }
 
   @override
   void initState() {
     super.initState();
-    fetchDataFromFirestore();
+    fetchData();
   }
 
   @override
