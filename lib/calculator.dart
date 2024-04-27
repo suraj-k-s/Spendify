@@ -8,6 +8,7 @@ import 'package:math_expressions/math_expressions.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:progress_dialog_null_safe/progress_dialog_null_safe.dart';
+import 'package:spendify/dashboard_screen.dart';
 import 'package:spendify/homepage.dart';
 
 class Calenders extends StatefulWidget {
@@ -115,6 +116,7 @@ class _CalendersState extends State<Calenders> {
       for (var doc in querySnapshot.docs) {
         totalExpenses += double.parse(doc['amount']);
       }
+
       print("Total Exp: $totalExpenses");
       double budget = 0;
       QuerySnapshot<Map<String, dynamic>> querySnapshot2 =
@@ -127,6 +129,7 @@ class _CalendersState extends State<Calenders> {
       if (querySnapshot2.docs.isNotEmpty) {
         budget = double.parse(querySnapshot2.docs.first['budget']);
       }
+      totalExpenses += double.parse(result);
       if (totalExpenses > budget) {
         saveData(false);
         showDialog(
@@ -138,7 +141,11 @@ class _CalendersState extends State<Calenders> {
                 actions: <Widget>[
                   TextButton(
                       onPressed: () {
-                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage(),));
+                        Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DashBoard(),
+                            ));
                       },
                       child: Text("OK"))
                 ],
@@ -175,7 +182,7 @@ class _CalendersState extends State<Calenders> {
       await _uploadImage(documentId);
       _progressDialog.hide();
       print("Nav: $nav");
-      if(nav == true){
+      if (nav == true) {
         print('Hi');
         Navigator.pop(context);
         // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage(),));
@@ -285,7 +292,6 @@ class _CalendersState extends State<Calenders> {
                       checkDailyBudget();
                     } else {
                       await saveData(true);
-                      
                     }
                   },
                   icon: const Icon(Icons.save),

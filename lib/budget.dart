@@ -103,7 +103,6 @@ class _BudgetState extends State<Budget> {
     return ListView(
       shrinkWrap: true,
       children: [
-        const Text('Budget'),
         ListView.builder(
           itemCount: budgetData.length,
           shrinkWrap: true,

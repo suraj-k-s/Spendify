@@ -32,14 +32,17 @@ class _BudgetlimtState extends State<Budgetlimt> {
     double remaining = double.parse(widget.budget) - double.parse(widget.exp);
     return Column(
       children: [
-        const SizedBox(height: 30),
+        const SizedBox(height: 10),
         Text("Budgeted Categories: ${widget.date}"),
         const Divider(),
         Row(
           children: [
             CircleAvatar(
-              backgroundColor: Color.fromARGB(255, 196, 115, 203),
-              child: Icon(Icons.brush),
+              backgroundColor: const Color.fromARGB(255, 196, 115, 203),
+              child: Icon(
+                IconData(widget.icon, fontFamily: 'MaterialIcons'),
+                size: 24,
+              ),
             ),
             Row(
               mainAxisSize: MainAxisSize.max,
@@ -49,23 +52,23 @@ class _BudgetlimtState extends State<Budgetlimt> {
                   children: [
                     Text(
                       widget.category,
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Text("Limit: ${widget.budget}"),
-                    SizedBox(
+                    const SizedBox(
                       width: 10,
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 10,
                     ),
                     Text("Spent: ${widget.exp}"),
-                    SizedBox(
+                    const SizedBox(
                       height: 10,
                     ),
                     Text("Remaining: ${remaining.toString()}")
                   ],
                 ),
-                Column(
+                const Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
