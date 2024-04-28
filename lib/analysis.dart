@@ -59,11 +59,9 @@ class _AnalysisState extends State<Analysis> {
         String categoryId = dailyDoc['category_id'];
         double amount = double.parse(dailyDoc['amount']);
 
-        // Retrieve category information from the "categories" collection
         DocumentSnapshot categorySnapshot =
             await firestore.collection('categories').doc(categoryId).get();
 
-        // Check if the category document exists and if it is an expense category
         if (categorySnapshot.exists && categorySnapshot['type'] == 'expense') {
           String categoryName = categorySnapshot['name'];
           if (!dataExp.containsKey(categoryName)) {
@@ -108,13 +106,13 @@ class _AnalysisState extends State<Analysis> {
   @override
   void initState() {
     _pages = [
-      Calendar(),
       ChartE(
         data: dataExp,
       ),
       ChartI(
         data: dataInc,
       ),
+      const Calendar(),
     ];
     super.initState();
     getDaily();
@@ -133,7 +131,7 @@ class _AnalysisState extends State<Analysis> {
               children: [
                 IconButton(
                   onPressed: () {
-                    _changeMonth(-1); // Move to previous month
+                    _changeMonth(-1);
                   },
                   icon: const Icon(
                     Icons.chevron_left,
@@ -152,7 +150,7 @@ class _AnalysisState extends State<Analysis> {
                 const SizedBox(width: 5),
                 IconButton(
                   onPressed: () {
-                    _changeMonth(1); // Move to next month
+                    _changeMonth(1);
                   },
                   icon: const Icon(
                     Icons.chevron_right,
@@ -240,18 +238,18 @@ class _AnalysisState extends State<Analysis> {
             items: const [
               DropdownMenuItem(
                 value: 0,
-                child: Text('Calendar',
+                child: Text('Chart Expense',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                     )),
               ),
               DropdownMenuItem(
                 value: 1,
-                child: Text('Chart Expense'),
+                child: Text('Chart Income'),
               ),
               DropdownMenuItem(
                 value: 2,
-                child: Text('Chart Income'),
+                child: Text('Calender'),
               ),
             ],
             onChanged: (newIndex) {
@@ -267,5 +265,10 @@ class _AnalysisState extends State<Analysis> {
         _pages[_currentIndex],
       ],
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 }

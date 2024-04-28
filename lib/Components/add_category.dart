@@ -17,7 +17,7 @@ class CategoryDialog extends StatefulWidget {
       this.type = 'income',
       this.category = '',
       this.icon,
-      this.id});
+      this.id = ''});
 
   @override
   _CategoryDialogState createState() => _CategoryDialogState();
@@ -61,6 +61,18 @@ class _CategoryDialogState extends State<CategoryDialog> {
       Navigator.of(context).pop();
     } catch (e) {
       print("Error inserting: $e");
+    }
+  }
+
+  Future<void> editCategory() async {
+    try {
+      await _firestore.collection('categories').doc(widget.id).update({
+        'type': _type,
+        'icon': _selectedIcon?.codePoint,
+        'name': _textEditingController.text
+      });
+    } catch (e) {
+      print("Error: $e");
     }
   }
 
@@ -215,7 +227,12 @@ class _CategoryDialogState extends State<CategoryDialog> {
         ),
         TextButton(
           onPressed: () {
-            addcategory();
+            if(widget.id == ""){
+              addcategory();
+            }
+            else{
+              editCategory();
+            }
           },
           child: const Text('Save'),
         ),

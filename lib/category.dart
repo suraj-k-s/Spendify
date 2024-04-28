@@ -156,6 +156,7 @@ class Categories extends StatelessWidget {
                                       title: "Edit",
                                       category: category['name'],
                                       icon: category['icon'],
+                                      id: category['id'],
                                     ),
                                   ));
                             } else if (value == 'delete') {
@@ -215,6 +216,7 @@ class Categories extends StatelessWidget {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => CategoryDialog(
+                                      id: category['id'],
                                       title: "Edit",
                                       category: category['name'],
                                       icon: category['icon'],

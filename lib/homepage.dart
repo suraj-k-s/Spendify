@@ -33,7 +33,7 @@ class _HomePageState extends State<HomePage> {
           DateTime(_selectedDate.year, _selectedDate.month + increment);
     });
     getDaily();
-  } 
+  }
 
   Future<void> getDaily() async {
     try {
@@ -60,7 +60,6 @@ class _HomePageState extends State<HomePage> {
       for (QueryDocumentSnapshot<Map<String, dynamic>> documentSnapshot
           in totalSnapshot.docs) {
         Map<String, dynamic> data = documentSnapshot.data();
-        print(data);
         double amt = double.parse(data['amount']);
         data['id'] = documentSnapshot.id;
         DocumentSnapshot<Map<String, dynamic>> catSnap = await FirebaseFirestore
@@ -71,9 +70,6 @@ class _HomePageState extends State<HomePage> {
         if (catSnap.exists) {
           Map<String, dynamic>? catdata = catSnap.data();
           if (catdata != null) {
-            print("CategorY: ${catdata['name']}");
-            print("icon: ${catdata['icon']}");
-            print("type: ${catdata['type']}");
             data['category'] = catdata['name'];
             data['icon'] = catdata['icon'];
             data['type'] = catdata['type'];
@@ -87,12 +83,9 @@ class _HomePageState extends State<HomePage> {
         }
         daily.add(data);
       }
-      print(daily);
-      setState(() {
-        dailyData = daily;
-      });
       total = inc - exp;
       setState(() {
+        dailyData = daily;
         totalAmt = total;
         totalExpenses = exp;
         totalIncome = inc;
@@ -104,6 +97,15 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    return RefreshIndicator(
+      onRefresh: () async {
+        await getDaily();
+      },
+      child: buildMainContent(),
+    );
+  }
+
+  Widget buildMainContent() {
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -115,7 +117,7 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   IconButton(
                     onPressed: () {
-                      _changeMonth(-1); // Move to previous month
+                      _changeMonth(-1);
                     },
                     icon: const Icon(
                       Icons.chevron_left,
@@ -134,7 +136,7 @@ class _HomePageState extends State<HomePage> {
                   const SizedBox(width: 5),
                   IconButton(
                     onPressed: () {
-                      _changeMonth(1); // Move to next month
+                      _changeMonth(1);
                     },
                     icon: const Icon(
                       Icons.chevron_right,
@@ -225,16 +227,15 @@ class _HomePageState extends State<HomePage> {
               final time = DateFormat('HH:mm:ss').parse(formattedTimeString);
               final DateTime date = DateTime.parse(daily['date']);
               final String bill = daily['bill'] ?? '';
-              // final String id = documents[index].id;
+
               final int iconName = daily['icon'] ?? 0;
               final String type = daily['type'] ?? '';
               final String category = daily['category'] ?? '';
               final String id = daily['id'] ?? '';
               Color amountColor = type == 'expense' ? Colors.red : Colors.green;
-              if( type == 'expense' ){
+              if (type == 'expense') {
                 amount = "-${daily['amount']}";
-              }
-              else{
+              } else {
                 amount = daily['amount'];
               }
               return Column(
@@ -264,8 +265,7 @@ class _HomePageState extends State<HomePage> {
                     },
                     leading: CircleAvatar(
                       backgroundColor: Colors.orangeAccent,
-                      child: _buildIcon(
-                          iconName), // Using a helper function to build the icon
+                      child: _buildIcon(iconName),
                     ),
                     title: Text(category,
                         style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -283,15 +283,19 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Helper function to build the icon based on iconName
   Widget _buildIcon(int iconName) {
     return Text(
-      String.fromCharCode(iconName), // Convert iconName to Unicode character
+      String.fromCharCode(iconName),
       style: const TextStyle(
-        fontSize: 24, // Adjust font size as needed
-        fontFamily:
-            'MaterialIcons', // Ensure the correct font family is used (Material Icons)
+        fontSize: 24,
+        fontFamily: 'MaterialIcons',
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    // Dispose of your animation controllers here
+    super.dispose();
   }
 }

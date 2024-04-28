@@ -7,18 +7,28 @@ class AddBudget extends StatefulWidget {
   final String docId;
   final int icon;
   final String category;
+  final String id;
+  final String amt;
 
   const AddBudget(
       {super.key,
-      required this.docId,
+      required this.docId,  
       required this.icon,
-      required this.category});
+      required this.category,
+      this.id = '',
+      this.amt = "0"});
 
   @override
   State<AddBudget> createState() => _AddBudgetState();
 }
 
 class _AddBudgetState extends State<AddBudget> {
+
+  @override
+  void initState(){
+    super.initState();
+    _limitController.text = widget.amt;
+  }
   final TextEditingController _limitController = TextEditingController();
 
   Future<void> insertBudge() async {
@@ -44,6 +54,32 @@ class _AddBudgetState extends State<AddBudget> {
       print('Error Adding Budget: $e');
       Fluttertoast.showToast(
         msg: "Adding budget failed",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+    }
+  }
+
+  Future<void> editBudget() async {
+    try {
+      await FirebaseFirestore.instance.collection('budget').doc(widget.id).update(
+        {
+          'budget': _limitController.text,
+        },
+      );
+      Fluttertoast.showToast(
+        msg: "Budget Updated",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+      );
+    } catch (e) {
+      print("Error: $e");
+      Fluttertoast.showToast(
+        msg: "Budget Failed",
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         backgroundColor: Colors.red,
@@ -111,7 +147,12 @@ class _AddBudgetState extends State<AddBudget> {
         ),
         TextButton(
           onPressed: () {
-            insertBudge();
+            if(widget.id == ''){
+              insertBudge();
+            }
+            else{
+              editBudget();
+            }
           },
           child: const Text('Save'),
         ),

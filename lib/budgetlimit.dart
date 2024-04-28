@@ -1,4 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:spendify/Components/add_budget.dart';
 
 class Budgetlimt extends StatefulWidget {
   final String date;
@@ -26,6 +29,34 @@ class Budgetlimt extends StatefulWidget {
 }
 
 class _BudgetlimtState extends State<Budgetlimt> {
+  Future<void> deleteItem(String id) async {
+      try {
+        await FirebaseFirestore.instance
+            .collection('budget')
+            .doc(id)
+            .delete();
+        Fluttertoast.showToast(
+          msg: "Data deleted successfully",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      } catch (error) {
+        print("Error deleting document: $error");
+        Fluttertoast.showToast(
+          msg: "Error deleting data",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      }
+    }
   @override
   Widget build(BuildContext context) {
     double prVal = widget.value.toDouble();
@@ -35,52 +66,64 @@ class _BudgetlimtState extends State<Budgetlimt> {
         const SizedBox(height: 10),
         Text("Budgeted Categories: ${widget.date}"),
         const Divider(),
-        Row(
-          children: [
-            CircleAvatar(
-              backgroundColor: const Color.fromARGB(255, 196, 115, 203),
-              child: Icon(
-                IconData(widget.icon, fontFamily: 'MaterialIcons'),
-                size: 24,
+        ListTile(
+          leading: CircleAvatar(
+            backgroundColor: const Color.fromARGB(255, 196, 115, 203),
+            child: Icon(
+              IconData(widget.icon, fontFamily: 'MaterialIcons'),
+              size: 24,
+            ),
+          ),
+          title: Text(
+            widget.category,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Limit: ${widget.budget}"),
+              const SizedBox(
+                width: 10,
               ),
-            ),
-            Row(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  children: [
-                    Text(
-                      widget.category,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Text("Limit: ${widget.budget}"),
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Text("Spent: ${widget.exp}"),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Text("Remaining: ${remaining.toString()}")
-                  ],
-                ),
-                const Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Icon(Icons.keyboard_control),
-                    SizedBox(
-                      height: 10,
-                    ),
-                  ],
-                )
-              ],
-            ),
-          ],
+              const SizedBox(
+                height: 10,
+              ),
+              Text("Spent: ${widget.exp}"),
+              const SizedBox(
+                height: 10,
+              ),
+              Text("Remaining: ${remaining.toString()}"),
+            ],
+          ),
+          trailing: PopupMenuButton(
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'edit',
+                child: Text('Change Limit'),
+              ),
+              const PopupMenuItem(
+                value: 'delete',
+                child: Text('Delete'),
+              ),
+            ],
+            onSelected: (value) {
+              if (value == 'edit') {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AddBudget(
+                        docId: '',
+                        category: widget.category,
+                        icon: widget.icon,
+                        amt: widget.budget,
+                        id: widget.id,
+                      ),
+                    ));
+              } else if (value == 'delete') {
+                deleteItem(widget.id);
+              }
+            },
+          ),
         ),
         Padding(
           padding: const EdgeInsets.only(left: 25, right: 25),
