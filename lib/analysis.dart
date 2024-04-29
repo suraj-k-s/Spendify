@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:pie_chart/pie_chart.dart';
 import 'package:spendify/Components/filtersheet.dart';
 import 'package:spendify/calendar.dart';
 import 'package:spendify/chart_expense.dart';
@@ -106,13 +107,11 @@ class _AnalysisState extends State<Analysis> {
   @override
   void initState() {
     _pages = [
-      ChartE(
-        data: dataExp,
-      ),
+      const SelectOption(),
+      ChartE(data: dataExp),
       ChartI(
         data: dataInc,
       ),
-      const Calendar(),
     ];
     super.initState();
     getDaily();
@@ -121,154 +120,224 @@ class _AnalysisState extends State<Analysis> {
   int _currentIndex = 0;
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Stack(
+    return RefreshIndicator(
+      onRefresh: () async {
+        await getDaily();
+      },
+      child: SingleChildScrollView(
+        child: Column(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.max,
+            Stack(
               children: [
-                IconButton(
-                  onPressed: () {
-                    _changeMonth(-1);
-                  },
-                  icon: const Icon(
-                    Icons.chevron_left,
-                    color: Color.fromARGB(255, 48, 2, 35),
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        _changeMonth(-1);
+                      },
+                      icon: const Icon(
+                        Icons.chevron_left,
+                        color: Color.fromARGB(255, 48, 2, 35),
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      DateFormat.yMMMM().format(_selectedDate),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                        fontSize: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    IconButton(
+                      onPressed: () {
+                        _changeMonth(1);
+                      },
+                      icon: const Icon(
+                        Icons.chevron_right,
+                        color: Color.fromARGB(255, 48, 2, 35),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 5),
-                Text(
-                  DateFormat.yMMMM().format(_selectedDate),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                    fontSize: 24,
-                  ),
-                ),
-                const SizedBox(width: 5),
-                IconButton(
-                  onPressed: () {
-                    _changeMonth(1);
-                  },
-                  icon: const Icon(
-                    Icons.chevron_right,
-                    color: Color.fromARGB(255, 48, 2, 35),
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => const FilterSheet(),
+                        );
+                      },
+                      icon: const Icon(
+                        Icons.filter_list,
+                        color: Color.fromARGB(255, 48, 2, 35),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
             Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                IconButton(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => const FilterSheet(),
-                    );
-                  },
-                  icon: const Icon(
-                    Icons.filter_list,
-                    color: Color.fromARGB(255, 48, 2, 35),
-                  ),
+                Column(
+                  children: [
+                    const Text(
+                      "EXPENSE",
+                      style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
+                    ),
+                    Text(
+                      totalExpenses.toString(),
+                      style: const TextStyle(color: Colors.black),
+                    ),
+                  ],
+                ),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(
+                      width: 50,
+                    ),
+                    const Text(
+                      "INCOME",
+                      style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
+                    ),
+                    Text(
+                      totalIncome.toString(),
+                      style: const TextStyle(color: Colors.black),
+                    ),
+                  ],
+                ),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    const Text(
+                      "TOTAL",
+                      style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
+                    ),
+                    Text(
+                      totalAmt.toString(),
+                      style: const TextStyle(color: Colors.black),
+                    ),
+                  ],
                 ),
               ],
             ),
+            const SizedBox(
+              height: 20,
+            ),
+            SizedBox(
+              width: 300,
+              child: DropdownButtonFormField(
+                decoration: const InputDecoration(
+                    hintText: 'Overview', border: OutlineInputBorder()),
+                value: _currentIndex,
+                hint: const Text('Overview'),
+                items: const [
+                  DropdownMenuItem(
+                    value: 0,
+                    child: Text('Select an Option',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        )),
+                  ),
+                  DropdownMenuItem(
+                    value: 1,
+                    child: Text('Chart Expense'),
+                  ),
+                  DropdownMenuItem(
+                    value: 2,
+                    child: Text('Chart Income'),
+                  ),
+                  DropdownMenuItem(
+                    value: 3,
+                    child: Text('Calendar',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        )),
+                  ),
+                ],
+                onChanged: (newIndex) {
+                  if (newIndex == 3) {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => MyCalendar(),));
+                  }
+                  else{
+                    setState(() {
+                      _currentIndex = newIndex!;
+                    });
+                  }
+                },
+              ),
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            _pages[_currentIndex],
           ],
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Column(
-              children: [
-                Text(
-                  "EXPENSE",
-                  style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
-                ),
-                Text(
-                  totalExpenses.toString(),
-                  style: TextStyle(color: Colors.black),
-                ),
-              ],
-            ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: 50,
-                ),
-                Text(
-                  "INCOME",
-                  style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
-                ),
-                Text(
-                  totalIncome.toString(),
-                  style: TextStyle(color: Colors.black),
-                ),
-              ],
-            ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Text(
-                  "TOTAL",
-                  style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
-                ),
-                Text(
-                  totalAmt.toString(),
-                  style: TextStyle(color: Colors.black),
-                ),
-              ],
-            ),
-          ],
-        ),
-        const SizedBox(
-          height: 20,
-        ),
-        SizedBox(
-          width: 300,
-          child: DropdownButtonFormField(
-            decoration: const InputDecoration(
-                hintText: 'Overview', border: OutlineInputBorder()),
-            value: _currentIndex,
-            hint: const Text('Overview'),
-            items: const [
-              DropdownMenuItem(
-                value: 0,
-                child: Text('Chart Expense',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    )),
-              ),
-              DropdownMenuItem(
-                value: 1,
-                child: Text('Chart Income'),
-              ),
-              DropdownMenuItem(
-                value: 2,
-                child: Text('Calender'),
-              ),
-            ],
-            onChanged: (newIndex) {
-              setState(() {
-                _currentIndex = newIndex!;
-              });
-            },
-          ),
-        ),
-        const SizedBox(
-          height: 20,
-        ),
-        _pages[_currentIndex],
-      ],
+      ),
     );
   }
 
+  final colorList = [
+    Colors.greenAccent,
+    Colors.blueAccent,
+    Colors.redAccent,
+    Colors.orangeAccent,
+  ];
+  Widget chartExp() {
+    return Column(
+      children: [
+        if (dataLoaded)
+          dataExp.isNotEmpty
+              ? PieChart(
+                  dataMap: dataExp,
+                  animationDuration: const Duration(milliseconds: 800),
+                  chartLegendSpacing: 32,
+                  chartRadius: MediaQuery.of(context).size.width != 0
+                      ? MediaQuery.of(context).size.width / 3.2
+                      : 0,
+                  colorList: colorList,
+                  initialAngleInDegree: 0,
+                  chartType: ChartType.ring,
+                  ringStrokeWidth: 32,
+                  centerText: "Expense",
+                  legendOptions: const LegendOptions(
+                    showLegendsInRow: false,
+                    legendPosition: LegendPosition.right,
+                    showLegends: true,
+                    legendShape: BoxShape.circle,
+                    legendTextStyle: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  chartValuesOptions: const ChartValuesOptions(
+                    showChartValueBackground: true,
+                    showChartValues: true,
+                    showChartValuesInPercentage: false,
+                    showChartValuesOutside: false,
+                    decimalPlaces: 1,
+                  ),
+                )
+              : const Text('No data found'),
+      ],
+    );
+  }
+}
+
+class SelectOption extends StatelessWidget {
+  const SelectOption({super.key});
+
   @override
-  void dispose() {
-    super.dispose();
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Text('Select an Option'),
+    );
   }
 }

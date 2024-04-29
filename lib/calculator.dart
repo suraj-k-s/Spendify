@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -100,8 +102,6 @@ class _CalendersState extends State<Calenders> {
       DateTime now = DateTime.now();
       DateTime firstDayOfMonth = DateTime(now.year, now.month, 1);
       DateTime lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
-      print("First: $firstDayOfMonth");
-      print("Last: $lastDayOfMonth");
       final user = FirebaseAuth.instance.currentUser;
       final userId = user?.uid;
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
@@ -112,12 +112,9 @@ class _CalendersState extends State<Calenders> {
           .where('date', isLessThanOrEqualTo: lastDayOfMonth.toString())
           .get();
       double totalExpenses = 0.0;
-      print("Length: ${querySnapshot.docs.length}");
       for (var doc in querySnapshot.docs) {
         totalExpenses += double.parse(doc['amount']);
       }
-
-      print("Total Exp: $totalExpenses");
       double budget = 0;
       QuerySnapshot<Map<String, dynamic>> querySnapshot2 =
           await FirebaseFirestore.instance
@@ -136,18 +133,18 @@ class _CalendersState extends State<Calenders> {
             context: context,
             builder: (context) {
               return AlertDialog(
-                title: Text("Budget Exceeded"),
-                content: Text("You have exceeded your daily budget"),
+                title: const Text("Budget Exceeded"),
+                content: const Text("You have exceeded your daily budget"),
                 actions: <Widget>[
                   TextButton(
                       onPressed: () {
                         Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => DashBoard(),
+                              builder: (context) => const DashBoard(),
                             ));
                       },
-                      child: Text("OK"))
+                      child: const Text("OK"))
                 ],
               );
             });
@@ -160,7 +157,6 @@ class _CalendersState extends State<Calenders> {
   }
 
   Future<void> saveData(bool nav) async {
-    print("Category: $selectedCategory");
     _progressDialog.show();
     String formattedDate = DateFormat('yyyy-MM-dd').format(_selectedDate);
     String formattedTime = '${_selectedTime.hour}:${_selectedTime.minute}';
@@ -181,13 +177,10 @@ class _CalendersState extends State<Calenders> {
       String documentId = newDocumentRef.id;
       await _uploadImage(documentId);
       _progressDialog.hide();
-      print("Nav: $nav");
       if (nav == true) {
-        print('Hi');
         Navigator.pop(context);
-        // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage(),));
+        // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomePage(),));
       }
-      print("Data saved successfully");
     } catch (e) {
       _progressDialog.hide();
       print("Error saving data: $e");
@@ -288,10 +281,61 @@ class _CalendersState extends State<Calenders> {
               children: [
                 ElevatedButton.icon(
                   onPressed: () async {
-                    if (_type == "expense") {
-                      checkDailyBudget();
-                    } else {
-                      await saveData(true);
+                    if (selectedCategory != null && result != '0') {
+                      if (_type == "expense") {
+                        checkDailyBudget();
+                      } else {
+                        await saveData(true);
+                      }
+                    } else if (selectedCategory == null) {
+                      showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: const Text("Select Category"),
+                              content: const Text("Please select a category"),
+                              actions: <Widget>[
+                                TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    child: const Text("OK"))
+                              ],
+                            );
+                          });
+                    } else if (result == '0') {
+                      showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: const Text("Enter Amount"),
+                              content: const Text("Please enter an amount"),
+                              actions: <Widget>[
+                                TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    child: const Text("OK"))
+                              ],
+                            );
+                          });
+                    }
+                    else{
+                      showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: const Text("Something went wrong"),
+                              content: const Text("Please try again"),
+                              actions: <Widget>[
+                                TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    child: const Text("OK"))
+                              ],
+                            );
+                          });
                     }
                   },
                   icon: const Icon(Icons.save),
