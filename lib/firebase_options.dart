@@ -59,4 +59,5 @@ class DefaultFirebaseOptions {
     projectId: 'spendify-2024',
     storageBucket: 'spendify-2024.appspot.com',
   );
+
 }
