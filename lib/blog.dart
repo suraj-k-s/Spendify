@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:spendify/Components/popupblog.dart';
 import 'package:spendify/data/blog_data.dart';
 
 class Blog extends StatefulWidget {
@@ -21,23 +22,35 @@ class _BlogState extends State<Blog> {
           final String answer = blogData[index]['ANSWER'];
           final String image = blogData[index]['image'];
 
-          return  BudgetTip(
-              image:image,
+          return GestureDetector(
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) => Popupblog(
+                  question: question,
+                  answer: answer,
+                ),
+              );
+            },
+            child: BudgetTip(
+              image: image,
               question: question,
-              answer:answer,
-                  
-            );
+              answer: answer,
+            ),
+          );
         },
       ),
     );
   }
 }
+
 class BudgetTip extends StatelessWidget {
   final String image;
   final String question;
   final String answer;
 
-  BudgetTip({
+  const BudgetTip({
+    super.key,
     required this.image,
     required this.question,
     required this.answer,

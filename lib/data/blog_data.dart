@@ -1,5 +1,5 @@
 List<Map<String, dynamic>> blogData = [
-  // Income Categories
+  // Blog Categories
   {
      'image':"assets/stockmarket.jpeg",
     'QUESTION': 'How can you invest in Stock Market?',
