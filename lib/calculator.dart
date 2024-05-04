@@ -1,10 +1,11 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, avoid_print
 
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:spendify/Components/category_sheet.dart';
 import 'package:math_expressions/math_expressions.dart';
 import 'package:intl/intl.dart';
@@ -99,6 +100,7 @@ class _CalendersState extends State<Calenders> {
 
   Future<void> checkDailyBudget() async {
     try {
+      _progressDialog.show();
       DateTime now = DateTime.now();
       DateTime firstDayOfMonth = DateTime(now.year, now.month, 1);
       DateTime lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
@@ -127,36 +129,65 @@ class _CalendersState extends State<Calenders> {
         budget = double.parse(querySnapshot2.docs.first['budget']);
       }
       totalExpenses += double.parse(result);
-      if (totalExpenses > budget) {
-        saveData(false);
-        showDialog(
-            context: context,
-            builder: (context) {
-              return AlertDialog(
-                title: const Text("Budget Exceeded"),
-                content: const Text("You have exceeded your daily budget"),
-                actions: <Widget>[
-                  TextButton(
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const DashBoard(),
-                            ));
-                      },
-                      child: const Text("OK"))
-                ],
-              );
-            });
-      } else {
-        await saveData(true);
+      double perc = (totalExpenses / budget) * 100;
+      print("Percentage: $perc");
+      String formattedDate = DateFormat('yyyy-MM-dd').format(_selectedDate);
+      String formattedTime = '${_selectedTime.hour}:${_selectedTime.minute}';
+      DocumentReference newDocumentRef =
+          await _firestore.collection('daily').add({
+        'user_id': userId,
+        'category_id': selectedCategory,
+        'note': _noteController.text,
+        'amount': result,
+        'date': formattedDate,
+        'time': formattedTime,
+        'bill': ''
+      });
+
+      String documentId = newDocumentRef.id;
+      await _uploadImage(documentId);
+      _progressDialog.hide();
+      if (perc > 90.0 && perc < 100.0) {
+        Fluttertoast.showToast(
+          msg: "You are about to reach the limit!",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP,
+          backgroundColor: Colors.blue[900],
+          textColor: Colors.white,
+        );
       }
+      else if (totalExpenses > budget) {
+        Fluttertoast.showToast(
+          msg: "You have exceeded your daily budget!",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP,
+          backgroundColor: Colors.blue[900],
+          textColor: Colors.white,
+        );
+      } else {
+        Fluttertoast.showToast(
+          msg: "Daily Added",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP,
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+        );
+      }
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => DashBoard(),));
     } catch (e) {
+      _progressDialog.hide();
+      Fluttertoast.showToast(
+          msg: "Something went wrong. please try again",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
       print("Error checking budget: $e");
     }
   }
 
-  Future<void> saveData(bool nav) async {
+  Future<void> saveData() async {
     _progressDialog.show();
     String formattedDate = DateFormat('yyyy-MM-dd').format(_selectedDate);
     String formattedTime = '${_selectedTime.hour}:${_selectedTime.minute}';
@@ -177,10 +208,7 @@ class _CalendersState extends State<Calenders> {
       String documentId = newDocumentRef.id;
       await _uploadImage(documentId);
       _progressDialog.hide();
-      if (nav == true) {
-        Navigator.pop(context);
-        // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomePage(),));
-      }
+      
     } catch (e) {
       _progressDialog.hide();
       print("Error saving data: $e");
@@ -204,6 +232,11 @@ class _CalendersState extends State<Calenders> {
       print("Error uploading image: $e");
       // Handle error, show message or take appropriate action
     }
+  }
+
+  void navigateMe(){
+    print("Navigating...");
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomePage(),));
   }
 
   DateTime _selectedDate = DateTime.now();
@@ -285,7 +318,7 @@ class _CalendersState extends State<Calenders> {
                       if (_type == "expense") {
                         checkDailyBudget();
                       } else {
-                        await saveData(true);
+                        await saveData();
                       }
                     } else if (selectedCategory == null) {
                       showDialog(
@@ -319,8 +352,7 @@ class _CalendersState extends State<Calenders> {
                               ],
                             );
                           });
-                    }
-                    else{
+                    } else {
                       showDialog(
                           context: context,
                           builder: (context) {
