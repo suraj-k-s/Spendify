@@ -1,4 +1,9 @@
+import 'dart:js_interop';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class FeedbackPage extends StatefulWidget {
   const FeedbackPage({super.key});
@@ -9,6 +14,35 @@ class FeedbackPage extends StatefulWidget {
 
 class _FeedbackPageState extends State<FeedbackPage> {
   final TextEditingController _textEditingController = TextEditingController();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  void insertfeedback() {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      final userId = user?.uid;
+      String feedback = _textEditingController.text;
+      _firestore
+          .collection('feedback')
+          .add({'userId': userId, 'feedback': feedback});
+          Fluttertoast.showToast(
+          msg: "Thank You ",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+        );
+        Navigator.pop(context);
+    } catch (e) {
+Fluttertoast.showToast(
+          msg: " Please try again ",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
+      print("Error inserting: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

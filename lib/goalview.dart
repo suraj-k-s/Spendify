@@ -26,7 +26,7 @@ class _GoalviewState extends State<Goalview> {
        ListTile(
         leading: CircleAvatar(
         backgroundColor: Colors.blueGrey[200],
-        child: Icon(Icons.cast_for_education),
+        child: Icon(Icons.beach_access),
        ),
        title:Text("Vaccation",style: TextStyle(fontWeight: FontWeight.bold),),
        trailing: Text("+7000"),
@@ -34,7 +34,7 @@ class _GoalviewState extends State<Goalview> {
       ListTile(
         leading: CircleAvatar(
         backgroundColor: Colors.brown[600],
-        child: Icon(Icons.cast_for_education),
+        child: Icon(Icons.local_hospital),
        ),
        title:Text("Emergency",style: TextStyle(fontWeight: FontWeight.bold),),
        trailing: Text("+6000"),
@@ -42,7 +42,7 @@ class _GoalviewState extends State<Goalview> {
       ListTile(
         leading: CircleAvatar(
         backgroundColor: Colors.grey,
-        child: Icon(Icons.cast_for_education),
+        child: Icon(Icons.medical_services_sharp),
        ),
        title:Text("Medical Funds",style: TextStyle(fontWeight: FontWeight.bold),),
        trailing: Text("+5000"),
@@ -50,7 +50,7 @@ class _GoalviewState extends State<Goalview> {
       ListTile(
         leading: CircleAvatar(
         backgroundColor: Colors.lime,
-        child: Icon(Icons.cast_for_education),
+        child: Icon(Icons.money),
        ),
        title:Text("Debt Payment",style: TextStyle(fontWeight: FontWeight.bold),),
        trailing: Text("+3000"),
@@ -58,13 +58,13 @@ class _GoalviewState extends State<Goalview> {
         ListTile(
         leading: CircleAvatar(
         backgroundColor: Colors.teal,
-        child: Icon(Icons.cast_for_education),
+        child: Icon(Icons.car_rental),
        ),
        title:Text("Buying Utensils",style: TextStyle(fontWeight: FontWeight.bold),),
        trailing: Text("+4000"),
       ),
     ],
-
+    
    )
     );
   }
