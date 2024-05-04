@@ -97,187 +97,189 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    return buildMainContent();
+  }
+
+  Widget buildMainContent() {
     return RefreshIndicator(
       onRefresh: () async {
         await getDaily();
       },
-      child: buildMainContent(),
-    );
-  }
-
-  Widget buildMainContent() {
-    return SingleChildScrollView(
-      child: Column(
+      child: ListView(
         children: [
-          Stack(
+          Column(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.max,
+              Stack(
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      _changeMonth(-1);
-                    },
-                    icon: const Icon(
-                      Icons.chevron_left,
-                      color: Color.fromARGB(255, 48, 2, 35),
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          _changeMonth(-1);
+                        },
+                        icon: const Icon(
+                          Icons.chevron_left,
+                          color: Color.fromARGB(255, 48, 2, 35),
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        DateFormat.yMMMM().format(_selectedDate),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                          fontSize: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      IconButton(
+                        onPressed: () {
+                          _changeMonth(1);
+                        },
+                        icon: const Icon(
+                          Icons.chevron_right,
+                          color: Color.fromARGB(255, 48, 2, 35),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 5),
-                  Text(
-                    DateFormat.yMMMM().format(_selectedDate),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                      fontSize: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 5),
-                  IconButton(
-                    onPressed: () {
-                      _changeMonth(1);
-                    },
-                    icon: const Icon(
-                      Icons.chevron_right,
-                      color: Color.fromARGB(255, 48, 2, 35),
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => const FilterSheet(),
+                          );
+                        },
+                        icon: const Icon(
+                          Icons.filter_list,
+                          color: Color.fromARGB(255, 48, 2, 35),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => const FilterSheet(),
-                      );
-                    },
-                    icon: const Icon(
-                      Icons.filter_list,
-                      color: Color.fromARGB(255, 48, 2, 35),
-                    ),
+                  Column(
+                    children: [
+                      const Text(
+                        "EXPENSE",
+                        style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
+                      ),
+                      Text(
+                        totalExpenses.toString(),
+                        style: const TextStyle(color: Colors.black),
+                      ),
+                    ],
+                  ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(
+                        width: 50,
+                      ),
+                      const Text(
+                        "INCOME",
+                        style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
+                      ),
+                      Text(
+                        totalIncome.toString(),
+                        style: const TextStyle(color: Colors.black),
+                      ),
+                    ],
+                  ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      const Text(
+                        "TOTAL",
+                        style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
+                      ),
+                      Text(
+                        totalAmt.toString(),
+                        style: const TextStyle(color: Colors.black),
+                      ),
+                    ],
                   ),
                 ],
               ),
+              const SizedBox(
+                height: 15,
+              ),
+              ListView.builder(
+                physics: NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: dailyData.length,
+                itemBuilder: (context, index) {
+                  final daily = dailyData[index];
+                  String amount = '0';
+                  final String note = daily['note'] ?? '';
+                  final timeString = daily['time'] ?? '';
+                  final formattedTimeString = '$timeString:00';
+                  final time = DateFormat('HH:mm:ss').parse(formattedTimeString);
+                  final DateTime date = DateTime.parse(daily['date']);
+                  final String bill = daily['bill'] ?? '';
+                
+                  final int iconName = daily['icon'] ?? 0;
+                  final String type = daily['type'] ?? '';
+                  final String category = daily['category'] ?? '';
+                  final String id = daily['id'] ?? '';
+                  Color amountColor = type == 'expense' ? Colors.red : Colors.green;
+                  if (type == 'expense') {
+                    amount = "-${daily['amount']}";
+                  } else {
+                    amount = daily['amount'];
+                  }
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (_previousDate != null)
+                        Text(
+                          DateFormat('MMMM dd, EEEE').format(date),
+                          style: const TextStyle(fontSize: 15),
+                        ),
+                      const Divider(),
+                      ListTile(
+                        onTap: () {
+                          showDialog(
+                              context: context,
+                              builder: (context) => PopupDaily(
+                                    amt: amount,
+                                    date: date,
+                                    note: note,
+                                    id: id,
+                                    time: time,
+                                    type: type,
+                                    icon: iconName,
+                                    category: category,
+                                    bill: bill,
+                                  ));
+                        },
+                        leading: CircleAvatar(
+                          backgroundColor: Colors.orangeAccent,
+                          child: _buildIcon(iconName),
+                        ),
+                        title: Text(category,
+                            style: const TextStyle(fontWeight: FontWeight.bold)),
+                        trailing: Text(
+                          amount,
+                          style: TextStyle(fontSize: 18, color: amountColor),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              )
             ],
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Column(
-                children: [
-                  const Text(
-                    "EXPENSE",
-                    style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
-                  ),
-                  Text(
-                    totalExpenses.toString(),
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                ],
-              ),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(
-                    width: 50,
-                  ),
-                  const Text(
-                    "INCOME",
-                    style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
-                  ),
-                  Text(
-                    totalIncome.toString(),
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                ],
-              ),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  const Text(
-                    "TOTAL",
-                    style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
-                  ),
-                  Text(
-                    totalAmt.toString(),
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(
-            height: 15,
-          ),
-          ListView.builder(
-            physics: NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            itemCount: dailyData.length,
-            itemBuilder: (context, index) {
-              final daily = dailyData[index];
-              String amount = '0';
-              final String note = daily['note'] ?? '';
-              final timeString = daily['time'] ?? '';
-              final formattedTimeString = '$timeString:00';
-              final time = DateFormat('HH:mm:ss').parse(formattedTimeString);
-              final DateTime date = DateTime.parse(daily['date']);
-              final String bill = daily['bill'] ?? '';
-
-              final int iconName = daily['icon'] ?? 0;
-              final String type = daily['type'] ?? '';
-              final String category = daily['category'] ?? '';
-              final String id = daily['id'] ?? '';
-              Color amountColor = type == 'expense' ? Colors.red : Colors.green;
-              if (type == 'expense') {
-                amount = "-${daily['amount']}";
-              } else {
-                amount = daily['amount'];
-              }
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (_previousDate != null)
-                    Text(
-                      DateFormat('MMMM dd, EEEE').format(date),
-                      style: const TextStyle(fontSize: 15),
-                    ),
-                  const Divider(),
-                  ListTile(
-                    onTap: () {
-                      showDialog(
-                          context: context,
-                          builder: (context) => PopupDaily(
-                                amt: amount,
-                                date: date,
-                                note: note,
-                                id: id,
-                                time: time,
-                                type: type,
-                                icon: iconName,
-                                category: category,
-                                bill: bill,
-                              ));
-                    },
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.orangeAccent,
-                      child: _buildIcon(iconName),
-                    ),
-                    title: Text(category,
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
-                    trailing: Text(
-                      amount,
-                      style: TextStyle(fontSize: 18, color: amountColor),
-                    ),
-                  ),
-                ],
-              );
-            },
-          )
         ],
       ),
     );

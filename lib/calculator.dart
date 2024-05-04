@@ -10,9 +10,7 @@ import 'package:spendify/Components/category_sheet.dart';
 import 'package:math_expressions/math_expressions.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:progress_dialog_null_safe/progress_dialog_null_safe.dart';
 import 'package:spendify/dashboard_screen.dart';
-import 'package:spendify/homepage.dart';
 
 class Calenders extends StatefulWidget {
   final String note = '';
@@ -43,13 +41,12 @@ class _CalendersState extends State<Calenders> {
   final TextEditingController _noteController = TextEditingController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   XFile? _selectedImage;
-  late ProgressDialog _progressDialog;
   final DateFormat dateFormat = DateFormat('yyyy-MM-dd');
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _progressDialog = ProgressDialog(context);
   }
 
   Future<void> _pickImage() async {
@@ -65,31 +62,36 @@ class _CalendersState extends State<Calenders> {
   }
 
   void _handleButtonPress(String buttonText) {
-    setState(() {
-      if (buttonText == 'C') {
-        expression = '';
-        result = '0';
-      } else if (buttonText == '=') {
-        try {
-          Parser parser = Parser();
-          Expression exp = parser.parse(expression);
-          ContextModel cm = ContextModel();
-          double evaluatedResult = exp.evaluate(EvaluationType.REAL, cm);
-          result = evaluatedResult.toString();
-        } catch (e) {
-          result = 'Error';
-        }
-      } else {
-        if (result == '0') {
-          expression = buttonText;
-          result = buttonText;
-        } else {
-          expression += buttonText;
-          result = expression;
-        }
+  setState(() {
+    if (buttonText == 'C') {
+      expression = '';
+      result = '0';
+    } else if (buttonText == '=') {
+      try {
+        Parser parser = Parser();
+        Expression exp = parser.parse(expression);
+        ContextModel cm = ContextModel();
+        double evaluatedResult = exp.evaluate(EvaluationType.REAL, cm);
+        result = evaluatedResult.toString();
+      } catch (e) {
+        result = 'Error';
       }
-    });
-  }
+    } else if (buttonText == '←') { // Handling backspace
+      if (expression.isNotEmpty) {
+        expression = expression.substring(0, expression.length - 1);
+        result = expression.isEmpty ? '0' : expression;
+      }
+    } else {
+      if (result == '0') {
+        expression = buttonText;
+        result = buttonText;
+      } else {
+        expression += buttonText;
+        result = expression;
+      }
+    }
+  });
+}
 
   void _handleSelectedCategory(String categoryId, String category) {
     setState(() {
@@ -100,7 +102,6 @@ class _CalendersState extends State<Calenders> {
 
   Future<void> checkDailyBudget() async {
     try {
-      _progressDialog.show();
       DateTime now = DateTime.now();
       DateTime firstDayOfMonth = DateTime(now.year, now.month, 1);
       DateTime lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
@@ -146,19 +147,17 @@ class _CalendersState extends State<Calenders> {
 
       String documentId = newDocumentRef.id;
       await _uploadImage(documentId);
-      _progressDialog.hide();
-      if (perc > 90.0 && perc < 100.0) {
+      if (perc > 90.0 && perc <= 100.0) {
         Fluttertoast.showToast(
-          msg: "You are about to reach the limit!",
+          msg: "You are about to reach the monthly budget limit!",
           toastLength: Toast.LENGTH_LONG,
           gravity: ToastGravity.TOP,
           backgroundColor: Colors.blue[900],
           textColor: Colors.white,
         );
-      }
-      else if (totalExpenses > budget) {
+      } else if (totalExpenses >= budget) {
         Fluttertoast.showToast(
-          msg: "You have exceeded your daily budget!",
+          msg: "You have exceeded your monthly budget!",
           toastLength: Toast.LENGTH_LONG,
           gravity: ToastGravity.TOP,
           backgroundColor: Colors.blue[900],
@@ -173,22 +172,21 @@ class _CalendersState extends State<Calenders> {
           textColor: Colors.white,
         );
       }
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => DashBoard(),));
+      navigateMe();
+      // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => DashBoard(),));
     } catch (e) {
-      _progressDialog.hide();
       Fluttertoast.showToast(
-          msg: "Something went wrong. please try again",
-          toastLength: Toast.LENGTH_LONG,
-          gravity: ToastGravity.TOP,
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-        );
+        msg: "Something went wrong. please try again",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.TOP,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
       print("Error checking budget: $e");
     }
   }
 
   Future<void> saveData() async {
-    _progressDialog.show();
     String formattedDate = DateFormat('yyyy-MM-dd').format(_selectedDate);
     String formattedTime = '${_selectedTime.hour}:${_selectedTime.minute}';
     try {
@@ -207,10 +205,8 @@ class _CalendersState extends State<Calenders> {
 
       String documentId = newDocumentRef.id;
       await _uploadImage(documentId);
-      _progressDialog.hide();
-      
+      navigateMe();
     } catch (e) {
-      _progressDialog.hide();
       print("Error saving data: $e");
     }
   }
@@ -234,9 +230,16 @@ class _CalendersState extends State<Calenders> {
     }
   }
 
-  void navigateMe(){
+  void navigateMe() {
+    setState(() {
+        _isLoading = false;
+      });
     print("Navigating...");
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomePage(),));
+    Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const DashBoard(),
+        ));
   }
 
   DateTime _selectedDate = DateTime.now();
@@ -305,361 +308,396 @@ class _CalendersState extends State<Calenders> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      body: SafeArea(
-        child: ListView(
-          shrinkWrap: true,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () async {
-                    if (selectedCategory != null && result != '0') {
-                      if (_type == "expense") {
-                        checkDailyBudget();
-                      } else {
-                        await saveData();
-                      }
-                    } else if (selectedCategory == null) {
-                      showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: const Text("Select Category"),
-                              content: const Text("Please select a category"),
-                              actions: <Widget>[
-                                TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                    },
-                                    child: const Text("OK"))
-                              ],
-                            );
-                          });
-                    } else if (result == '0') {
-                      showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: const Text("Enter Amount"),
-                              content: const Text("Please enter an amount"),
-                              actions: <Widget>[
-                                TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                    },
-                                    child: const Text("OK"))
-                              ],
-                            );
-                          });
-                    } else {
-                      showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: const Text("Something went wrong"),
-                              content: const Text("Please try again"),
-                              actions: <Widget>[
-                                TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                    },
-                                    child: const Text("OK"))
-                              ],
-                            );
-                          });
-                    }
-                  },
-                  icon: const Icon(Icons.save),
-                  label: const Text(
-                    "SAVE",
-                    style: TextStyle(
-                      color: Color.fromARGB(255, 98, 22, 113),
-                    ),
-                  ),
-                ),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  icon: const Icon(Icons.save),
-                  label: const Text(
-                    "CANCEL",
-                    style: TextStyle(
-                      color: Color.fromARGB(255, 98, 22, 113),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            //Types
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _isIncomeSelected = true;
-                      _isExpenseSelected = false;
-                      _isGoalSelected = false;
-                      _type = "income";
-                    });
-                  },
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 30,
-                        child: _isIncomeSelected
-                            ? const Center(child: Icon(Icons.check_circle))
-                            : null,
-                      ),
-                      Text(
-                        'INCOME',
-                        style: TextStyle(
-                            letterSpacing: .7,
-                            fontSize: 16,
-                            color: _isIncomeSelected
-                                ? null
-                                : const Color.fromARGB(255, 135, 135, 135)),
-                      )
-                    ],
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _isIncomeSelected = false;
-                      _isExpenseSelected = true;
-                      _isGoalSelected = false;
-                      _type = "expense";
-                    });
-                  },
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 30,
-                        child: _isExpenseSelected
-                            ? const Center(child: Icon(Icons.check_circle))
-                            : null,
-                      ),
-                      Text(
-                        'EXPENSE',
-                        style: TextStyle(
-                            letterSpacing: .7,
-                            fontSize: 16,
-                            color: _isExpenseSelected
-                                ? null
-                                : const Color.fromARGB(255, 135, 135, 135)),
-                      )
-                    ],
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _isIncomeSelected = false;
-                      _isExpenseSelected = false;
-                      _isGoalSelected = true;
-                      _type = "goal";
-                    });
-                  },
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 30,
-                        child: _isGoalSelected
-                            ? const Center(child: Icon(Icons.check_circle))
-                            : null,
-                      ),
-                      Text(
-                        'GOAL',
-                        style: TextStyle(
-                            letterSpacing: .7,
-                            fontSize: 16,
-                            color: _isGoalSelected
-                                ? null
-                                : const Color.fromARGB(255, 135, 135, 135)),
-                      )
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                const SizedBox(
-                  height: 10,
-                ),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    showModalBottomSheet(
-                      context: context,
-                      builder: (context) => CategoryBottomSheet(
-                        onCategorySelected: _handleSelectedCategory,
-                        type: _type,
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.category),
-                  label: Text(
-                    catButton,
-                    style: const TextStyle(
-                      color: Color.fromARGB(255, 67, 1, 49),
-                    ),
-                  ),
-                ),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    _pickImage();
-                  },
-                  icon: const Icon(Icons.camera_alt),
-                  label: Text(
-                    uploadButton,
-                    style: const TextStyle(
-                      color: Color.fromARGB(255, 67, 1, 49),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextFormField(
-                decoration: const InputDecoration(border: OutlineInputBorder()),
-                controller: _noteController,
-                keyboardType: TextInputType.multiline,
-                minLines: 4,
-                maxLines: null,
-              ),
-            ),
-
-            //Calculator Screen
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                decoration: BoxDecoration(
-                    border: Border.all(),
-                    borderRadius: BorderRadius.circular(5)),
-                height: 80,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: _isLoading
+          ? const Center(
+              child: SizedBox(
+                width: 100,
+                height: 100,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        result,
-                        style: const TextStyle(
-                            fontSize: 32, fontWeight: FontWeight.bold),
-                      ),
+                    CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
                     ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Text("Loading...")
                   ],
                 ),
               ),
-            ),
-
-            // Calculator Buttons
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
+            )
+          : SafeArea(
+              child: ListView(
+                shrinkWrap: true,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _buildButton('7'),
-                      _buildButton('8'),
-                      _buildButton('9'),
-                      _buildButton('/'),
+                      ElevatedButton.icon(
+                        onPressed: () async {
+                          if (selectedCategory != null && result != '0') {
+                            setState(() {
+                              _isLoading = true;
+                            });
+                            if (_type == "expense") {
+                              checkDailyBudget();
+                            } else {
+                              await saveData();
+                            }
+                          } else if (selectedCategory == null) {
+                            showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text("Select Category"),
+                                    content:
+                                        const Text("Please select a category"),
+                                    actions: <Widget>[
+                                      TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                          child: const Text("OK"))
+                                    ],
+                                  );
+                                });
+                          } else if (result == '0') {
+                            showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text("Enter Amount"),
+                                    content:
+                                        const Text("Please enter an amount"),
+                                    actions: <Widget>[
+                                      TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                          child: const Text("OK"))
+                                    ],
+                                  );
+                                });
+                          } else {
+                            showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text("Something went wrong"),
+                                    content: const Text("Please try again"),
+                                    actions: <Widget>[
+                                      TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                          child: const Text("OK"))
+                                    ],
+                                  );
+                                });
+                          }
+                        },
+                        icon: const Icon(Icons.save),
+                        label: const Text(
+                          "SAVE",
+                          style: TextStyle(
+                            color: Color.fromARGB(255, 98, 22, 113),
+                          ),
+                        ),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        icon: const Icon(Icons.save),
+                        label: const Text(
+                          "CANCEL",
+                          style: TextStyle(
+                            color: Color.fromARGB(255, 98, 22, 113),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
+                  //Types
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildButton('4'),
-                      _buildButton('5'),
-                      _buildButton('6'),
-                      _buildButton('*'),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isIncomeSelected = true;
+                            _isExpenseSelected = false;
+                            _isGoalSelected = false;
+                            _type = "income";
+                          });
+                        },
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 30,
+                              child: _isIncomeSelected
+                                  ? const Center(
+                                      child: Icon(Icons.check_circle))
+                                  : null,
+                            ),
+                            Text(
+                              'INCOME',
+                              style: TextStyle(
+                                  letterSpacing: .7,
+                                  fontSize: 16,
+                                  color: _isIncomeSelected
+                                      ? null
+                                      : const Color.fromARGB(
+                                          255, 135, 135, 135)),
+                            )
+                          ],
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isIncomeSelected = false;
+                            _isExpenseSelected = true;
+                            _isGoalSelected = false;
+                            _type = "expense";
+                          });
+                        },
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 30,
+                              child: _isExpenseSelected
+                                  ? const Center(
+                                      child: Icon(Icons.check_circle))
+                                  : null,
+                            ),
+                            Text(
+                              'EXPENSE',
+                              style: TextStyle(
+                                  letterSpacing: .7,
+                                  fontSize: 16,
+                                  color: _isExpenseSelected
+                                      ? null
+                                      : const Color.fromARGB(
+                                          255, 135, 135, 135)),
+                            )
+                          ],
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isIncomeSelected = false;
+                            _isExpenseSelected = false;
+                            _isGoalSelected = true;
+                            _type = "goal";
+                          });
+                        },
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 30,
+                              child: _isGoalSelected
+                                  ? const Center(
+                                      child: Icon(Icons.check_circle))
+                                  : null,
+                            ),
+                            Text(
+                              'GOAL',
+                              style: TextStyle(
+                                  letterSpacing: .7,
+                                  fontSize: 16,
+                                  color: _isGoalSelected
+                                      ? null
+                                      : const Color.fromARGB(
+                                          255, 135, 135, 135)),
+                            )
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildButton('1'),
-                      _buildButton('2'),
-                      _buildButton('3'),
-                      _buildButton('-'),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildButton('.'),
-                      _buildButton('0'),
-                      _buildButton('C'),
-                      _buildButton('+'),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          showModalBottomSheet(
+                            context: context,
+                            builder: (context) => CategoryBottomSheet(
+                              onCategorySelected: _handleSelectedCategory,
+                              type: _type,
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.category),
+                        label: Text(
+                          catButton,
+                          style: const TextStyle(
+                            color: Color.fromARGB(255, 67, 1, 49),
+                          ),
+                        ),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          _pickImage();
+                        },
+                        icon: const Icon(Icons.camera_alt),
+                        label: Text(
+                          uploadButton,
+                          style: const TextStyle(
+                            color: Color.fromARGB(255, 67, 1, 49),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          _handleButtonPress('=');
-                        },
-                        child: const Text(
-                          '=',
-                          style: TextStyle(fontSize: 24),
-                        ),
+                    child: TextFormField(
+                      decoration:
+                          const InputDecoration(border: OutlineInputBorder()),
+                      controller: _noteController,
+                      keyboardType: TextInputType.multiline,
+                      minLines: 4,
+                      maxLines: null,
+                    ),
+                  ),
+
+                  //Calculator Screen
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                          border: Border.all(),
+                          borderRadius: BorderRadius.circular(5)),
+                      height: 80,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              result,
+                              style: const TextStyle(
+                                  fontSize: 32, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          IconButton(onPressed: (){
+                            _handleButtonPress('←');
+                          }, icon:const Icon(Icons.backspace_outlined)) // backspace
+                        ],
                       ),
                     ),
                   ),
+
+                  // Calculator Buttons
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildButton('7'),
+                            _buildButton('8'),
+                            _buildButton('9'),
+                            _buildButton('/'),
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildButton('4'),
+                            _buildButton('5'),
+                            _buildButton('6'),
+                            _buildButton('*'),
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildButton('1'),
+                            _buildButton('2'),
+                            _buildButton('3'),
+                            _buildButton('-'),
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildButton('.'),
+                            _buildButton('0'),
+                            _buildButton('C'),
+                            _buildButton('+'),
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                _handleButtonPress('=');
+                              },
+                              child: const Text(
+                                '=',
+                                style: TextStyle(fontSize: 24),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 50, right: 50),
+                    child: Stack(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            _selectDate(context);
+                          },
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              '${_selectedDate.day} ${_getMonthName(_selectedDate.month)}, ${_selectedDate.year}',
+                            ), // Date
+                          ),
+                        ),
+                        Align(
+                          alignment: Alignment.center,
+                          child: Container(
+                            height:
+                                20, // Adjust the height of the line as needed
+                            width: 1, // Adjust the width of the line as needed
+                            color: Colors
+                                .black, // Adjust the color of the line as needed
+                            margin: const EdgeInsets.symmetric(
+                                horizontal:
+                                    8), // Adjust the spacing around the line as needed
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            _selectTime(context);
+                          },
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              '${_selectedTime.hour}:${_selectedTime.minute} ${_selectedTime.period == DayPeriod.am ? 'AM' : 'PM'}',
+                            ), // Time
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 50, right: 50),
-              child: Stack(
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      _selectDate(context);
-                    },
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        '${_selectedDate.day} ${_getMonthName(_selectedDate.month)}, ${_selectedDate.year}',
-                      ), // Date
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.center,
-                    child: Container(
-                      height: 20, // Adjust the height of the line as needed
-                      width: 1, // Adjust the width of the line as needed
-                      color: Colors
-                          .black, // Adjust the color of the line as needed
-                      margin: const EdgeInsets.symmetric(
-                          horizontal:
-                              8), // Adjust the spacing around the line as needed
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      _selectTime(context);
-                    },
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        '${_selectedTime.hour}:${_selectedTime.minute} ${_selectedTime.period == DayPeriod.am ? 'AM' : 'PM'}',
-                      ), // Time
-                    ),
-                  ),
-                ],
-              ),
-            )
-          ],
-        ),
-      ),
     );
   }
 
