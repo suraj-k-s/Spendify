@@ -25,7 +25,6 @@ class _BudgetState extends State<Budget> {
   Future<void> getBudget() async {
     final user = FirebaseAuth.instance.currentUser;
     final userId = user?.uid;
-    List<Map<String, dynamic>> data = [];
     DateTime now = DateTime.now();
     DateTime firstDayOfMonth = DateTime(now.year, now.month, 1);
     DateTime lastDayOfMonth = DateTime(now.year, now.month + 1, 0);

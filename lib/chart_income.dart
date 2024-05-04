@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore package
 import 'package:pie_chart/pie_chart.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class ChartI extends StatefulWidget {
   final Map<String, double> data;
