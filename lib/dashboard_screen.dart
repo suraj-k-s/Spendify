@@ -5,12 +5,15 @@ import 'package:spendify/analysis.dart';
 import 'package:spendify/blog.dart';
 import 'package:spendify/budget.dart';
 import 'package:spendify/category.dart';
+import 'package:spendify/child.dart';
 import 'package:spendify/feedback.dart';
+import 'package:spendify/goalview.dart';
 import 'package:spendify/help.dart';
 import 'package:spendify/homepage.dart';
 import 'package:spendify/calculator.dart';
 import 'package:spendify/login_screen.dart';
 import 'package:spendify/myaccount.dart';
+import 'package:spendify/parent.dart';
 import 'package:spendify/settings.dart';
 
 class DashBoard extends StatefulWidget {
@@ -24,6 +27,7 @@ class _DashBoardState extends State<DashBoard> {
   int _currentIndex = 0;
   final List<Widget> _pages = [
     const HomePage(),
+    const Goalview(),
     const Analysis(),
     const Budget(),
     const Categories()
@@ -136,6 +140,28 @@ class _DashBoardState extends State<DashBoard> {
                 
               },
             ),
+             ListTile(
+              title: const Text("InviteParent"),
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const Inviteparent(),
+                    ));
+                
+              },
+            ),
+             ListTile(
+              title: const Text("Invite Child"),
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const Invitechild(),
+                    ));
+                
+              },
+            ),
             ListTile(
               title: const Text("Logout"),
               onTap: () {
@@ -159,6 +185,10 @@ class _DashBoardState extends State<DashBoard> {
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.sports_basketball_outlined),
+            label: 'Goals',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.pie_chart),

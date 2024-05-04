@@ -77,11 +77,13 @@ class _HomePageState extends State<HomePage> {
 
           if (catdata?['type'] == 'income') {
             inc += amt;
-          } else {
+          } else if(catdata?['type'] == 'expense') {
             exp += amt;
           }
         }
+        if(data['type']!='goals'){
         daily.add(data);
+        }
       }
       total = inc - exp;
       setState(() {

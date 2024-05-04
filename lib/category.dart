@@ -77,6 +77,7 @@ class Categories extends StatelessWidget {
 
             final List<Map<String, dynamic>> incomeCategories = [];
             final List<Map<String, dynamic>> expenseCategories = [];
+            final List<Map<String, dynamic>> goalCategories = [];
 
             for (var doc in snapshot.data!.docs) {
               final Map<String, dynamic> data = doc.data();
@@ -90,8 +91,11 @@ class Categories extends StatelessWidget {
 
               if (data['type'] == 'income') {
                 incomeCategories.add(category);
-              } else {
+              } else if(data['type'] == 'expense'){
                 expenseCategories.add(category);
+              }
+              else{
+                goalCategories.add(category);
               }
             }
 
@@ -181,6 +185,70 @@ class Categories extends StatelessWidget {
                     physics: const NeverScrollableScrollPhysics(),
                     itemBuilder: (context, index) {
                       final category = expenseCategories[index];
+                      final random = Random();
+                      final randomColor = Color.fromARGB(
+                        255,
+                        (random.nextInt(64) + 192),
+                        (random.nextInt(64) + 192),
+                        (random.nextInt(64) + 192),
+                      );
+                      return ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: randomColor,
+                          child: Icon(category['icon']),
+                        ),
+                        title: Text(
+                          category['name'],
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        trailing: PopupMenuButton(
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(
+                              value: 'edit',
+                              child: Text('Edit'),
+                            ),
+                            const PopupMenuItem(
+                              value: 'delete',
+                              child: Text('Delete'),
+                            ),
+                          ],
+                          onSelected: (value) {
+                            if (value == 'edit') {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => CategoryDialog(
+                                      id: category['id'],
+                                      title: "Edit",
+                                      category: category['name'],
+                                      icon: category['icon'],
+                                      type: category['type'],
+                                    ),
+                                  ));
+                            } else if (value == 'delete') {
+                              deleteItem(category['id']);
+                            }
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                  const Text(
+                    "Goal Category",
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Color.fromARGB(255, 98, 22, 113),
+                        fontSize: 20),
+                  ),
+                  const Divider(),
+                  ListView.builder(
+                    itemCount: goalCategories.length,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      final category = goalCategories[index];
                       final random = Random();
                       final randomColor = Color.fromARGB(
                         255,

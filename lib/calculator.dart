@@ -62,36 +62,37 @@ class _CalendersState extends State<Calenders> {
   }
 
   void _handleButtonPress(String buttonText) {
-  setState(() {
-    if (buttonText == 'C') {
-      expression = '';
-      result = '0';
-    } else if (buttonText == '=') {
-      try {
-        Parser parser = Parser();
-        Expression exp = parser.parse(expression);
-        ContextModel cm = ContextModel();
-        double evaluatedResult = exp.evaluate(EvaluationType.REAL, cm);
-        result = evaluatedResult.toString();
-      } catch (e) {
-        result = 'Error';
-      }
-    } else if (buttonText == '←') { // Handling backspace
-      if (expression.isNotEmpty) {
-        expression = expression.substring(0, expression.length - 1);
-        result = expression.isEmpty ? '0' : expression;
-      }
-    } else {
-      if (result == '0') {
-        expression = buttonText;
-        result = buttonText;
+    setState(() {
+      if (buttonText == 'C') {
+        expression = '';
+        result = '0';
+      } else if (buttonText == '=') {
+        try {
+          Parser parser = Parser();
+          Expression exp = parser.parse(expression);
+          ContextModel cm = ContextModel();
+          double evaluatedResult = exp.evaluate(EvaluationType.REAL, cm);
+          result = evaluatedResult.toString();
+        } catch (e) {
+          result = 'Error';
+        }
+      } else if (buttonText == '←') {
+        // Handling backspace
+        if (expression.isNotEmpty) {
+          expression = expression.substring(0, expression.length - 1);
+          result = expression.isEmpty ? '0' : expression;
+        }
       } else {
-        expression += buttonText;
-        result = expression;
+        if (result == '0') {
+          expression = buttonText;
+          result = buttonText;
+        } else {
+          expression += buttonText;
+          result = expression;
+        }
       }
-    }
-  });
-}
+    });
+  }
 
   void _handleSelectedCategory(String categoryId, String category) {
     setState(() {
@@ -232,8 +233,8 @@ class _CalendersState extends State<Calenders> {
 
   void navigateMe() {
     setState(() {
-        _isLoading = false;
-      });
+      _isLoading = false;
+    });
     print("Navigating...");
     Navigator.pushReplacement(
         context,
@@ -491,7 +492,7 @@ class _CalendersState extends State<Calenders> {
                             _isIncomeSelected = false;
                             _isExpenseSelected = false;
                             _isGoalSelected = true;
-                            _type = "goal";
+                            _type = "goals";
                           });
                         },
                         child: Row(
@@ -586,9 +587,12 @@ class _CalendersState extends State<Calenders> {
                                   fontSize: 32, fontWeight: FontWeight.bold),
                             ),
                           ),
-                          IconButton(onPressed: (){
-                            _handleButtonPress('←');
-                          }, icon:const Icon(Icons.backspace_outlined)) // backspace
+                          IconButton(
+                              onPressed: () {
+                                _handleButtonPress('←');
+                              },
+                              icon: const Icon(
+                                  Icons.backspace_outlined)) // backspace
                         ],
                       ),
                     ),

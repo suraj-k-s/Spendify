@@ -13,14 +13,14 @@ import 'package:spendify/main.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:progress_dialog_null_safe/progress_dialog_null_safe.dart';
 
-class RegistrationScreen extends StatefulWidget {
-  const RegistrationScreen({super.key});
+class Childregistration extends StatefulWidget {
+  const Childregistration({super.key});
 
   @override
-  State<RegistrationScreen> createState() => _RegistrationScreenState();
+  State<Childregistration> createState() => _ChildregistrationState();
 }
 
-class _RegistrationScreenState extends State<RegistrationScreen> {
+class _ChildregistrationState extends State<Childregistration> {
   final TextEditingController _nameController = TextEditingController();
 
   final TextEditingController _emailController = TextEditingController();
