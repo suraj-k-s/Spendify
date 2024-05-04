@@ -81,7 +81,7 @@ class _AnalysisState extends State<Analysis> {
         }
         if (categorySnapshot['type'] == 'income') {
           inc += amount;
-        } else {
+        } else if (categorySnapshot['type'] == 'expense') {
           exp += amount;
         }
       }

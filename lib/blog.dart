@@ -80,11 +80,6 @@ class BudgetTip extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 8),
-                Text(
-                  answer,
-                  style: TextStyle(fontSize: 16),
-                ),
               ],
             ),
           ),

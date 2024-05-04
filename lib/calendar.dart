@@ -80,7 +80,7 @@ class _MyCalendarState extends State<MyCalendar> {
             }
             if (categorySnapshot['type'] == 'income') {
               inc += amount;
-            } else {
+            } else if (categorySnapshot['type'] == 'expense'){
               exp += amount;
             }
           }
