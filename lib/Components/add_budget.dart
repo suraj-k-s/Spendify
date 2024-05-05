@@ -102,10 +102,7 @@ class _AddBudgetState extends State<AddBudget> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    IconData(widget.icon, fontFamily: 'MaterialIcons'),
-                    size: 24,
-                  ),
+                  _buildIcon(widget.icon),
                   SizedBox(
                     width: 5,
                   ),
@@ -157,6 +154,15 @@ class _AddBudgetState extends State<AddBudget> {
           child: const Text('Save'),
         ),
       ],
+    );
+  }
+  Widget _buildIcon(int iconName) {
+    return Text(
+      String.fromCharCode(iconName),
+      style: const TextStyle(
+        fontSize: 24,
+        fontFamily: 'MaterialIcons',
+      ),
     );
   }
 }

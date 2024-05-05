@@ -71,10 +71,7 @@ class _BudgetlimtState extends State<Budgetlimt> {
         ListTile(
           leading: CircleAvatar(
             backgroundColor: const Color.fromARGB(255, 196, 115, 203),
-            child: Icon(
-              IconData(widget.icon, fontFamily: 'MaterialIcons'),
-              size: 24,
-            ),
+            child: _buildIcon(widget.icon)
           ),
           title: Text(
             widget.category,
@@ -135,6 +132,15 @@ class _BudgetlimtState extends State<Budgetlimt> {
           ),
         ),
       ],
+    );
+  }
+  Widget _buildIcon(int iconName) {
+    return Text(
+      String.fromCharCode(iconName),
+      style: const TextStyle(
+        fontSize: 24,
+        fontFamily: 'MaterialIcons',
+      ),
     );
   }
 }

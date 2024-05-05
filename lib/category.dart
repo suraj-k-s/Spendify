@@ -259,7 +259,7 @@ class Categories extends StatelessWidget {
                       return ListTile(
                         leading: CircleAvatar(
                           backgroundColor: randomColor,
-                          child: Icon(category['icon']),
+                          child: _buildIcon(category['icon']),
                         ),
                         title: Text(
                           category['name'],
@@ -339,6 +339,15 @@ class Categories extends StatelessWidget {
           },
         );
       },
+    );
+  }
+  Widget _buildIcon(int iconName) {
+    return Text(
+      String.fromCharCode(iconName),
+      style: const TextStyle(
+        fontSize: 24,
+        fontFamily: 'MaterialIcons',
+      ),
     );
   }
 }

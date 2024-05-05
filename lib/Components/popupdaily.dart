@@ -110,10 +110,7 @@ class PopupDaily extends StatelessWidget {
                   padding: const EdgeInsets.all(10),
                   child: Row(
                     children: [
-                      Icon(
-                        IconData(icon, fontFamily: 'MaterialIcons'),
-                        size: 24,
-                      ),
+                        _buildIcon(icon),
                       const SizedBox(width: 10),
                       Text(category),
                     ],
@@ -147,6 +144,15 @@ class PopupDaily extends StatelessWidget {
                 : const Text('No Bill Added'),
           ],
         ),
+      ),
+    );
+  }
+  Widget _buildIcon(int iconName) {
+    return Text(
+      String.fromCharCode(iconName),
+      style: const TextStyle(
+        fontSize: 24,
+        fontFamily: 'MaterialIcons',
       ),
     );
   }

@@ -31,10 +31,7 @@ class ChildCalculator extends StatefulWidget {
 class _ChildCalculatorState extends State<ChildCalculator> {
   String expression = '';
   String result = '0';
-  bool _isIncomeSelected = true;
-  bool _isExpenseSelected = false;
-  bool _isGoalSelected = false;
-  String _type = "income";
+  String _type = "expense";
   String catButton = "Category";
   String uploadButton = "Add Bill";
   String? selectedCategory;
@@ -339,11 +336,7 @@ class _ChildCalculatorState extends State<ChildCalculator> {
                             setState(() {
                               _isLoading = true;
                             });
-                            if (_type == "expense") {
-                              checkDailyBudget();
-                            } else {
-                              await saveData();
-                            }
+                            checkDailyBudget();
                           } else if (selectedCategory == null) {
                             showDialog(
                                 context: context,
@@ -419,104 +412,7 @@ class _ChildCalculatorState extends State<ChildCalculator> {
                     ],
                   ),
                   //Types
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _isIncomeSelected = true;
-                            _isExpenseSelected = false;
-                            _isGoalSelected = false;
-                            _type = "income";
-                          });
-                        },
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              width: 30,
-                              child: _isIncomeSelected
-                                  ? const Center(
-                                      child: Icon(Icons.check_circle))
-                                  : null,
-                            ),
-                            Text(
-                              'INCOME',
-                              style: TextStyle(
-                                  letterSpacing: .7,
-                                  fontSize: 16,
-                                  color: _isIncomeSelected
-                                      ? null
-                                      : const Color.fromARGB(
-                                          255, 135, 135, 135)),
-                            )
-                          ],
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _isIncomeSelected = false;
-                            _isExpenseSelected = true;
-                            _isGoalSelected = false;
-                            _type = "expense";
-                          });
-                        },
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              width: 30,
-                              child: _isExpenseSelected
-                                  ? const Center(
-                                      child: Icon(Icons.check_circle))
-                                  : null,
-                            ),
-                            Text(
-                              'EXPENSE',
-                              style: TextStyle(
-                                  letterSpacing: .7,
-                                  fontSize: 16,
-                                  color: _isExpenseSelected
-                                      ? null
-                                      : const Color.fromARGB(
-                                          255, 135, 135, 135)),
-                            )
-                          ],
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _isIncomeSelected = false;
-                            _isExpenseSelected = false;
-                            _isGoalSelected = true;
-                            _type = "goals";
-                          });
-                        },
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              width: 30,
-                              child: _isGoalSelected
-                                  ? const Center(
-                                      child: Icon(Icons.check_circle))
-                                  : null,
-                            ),
-                            Text(
-                              'GOAL',
-                              style: TextStyle(
-                                  letterSpacing: .7,
-                                  fontSize: 16,
-                                  color: _isGoalSelected
-                                      ? null
-                                      : const Color.fromARGB(
-                                          255, 135, 135, 135)),
-                            )
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+
                   Row(
                     children: [
                       const SizedBox(

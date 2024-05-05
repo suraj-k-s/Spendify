@@ -11,7 +11,7 @@ class CategoryBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
-      final userId = user?.uid;
+    final userId = user?.uid;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -40,8 +40,7 @@ class CategoryBottomSheet extends StatelessWidget {
                 final category = {
                   'id': doc.id,
                   'name': data['name'],
-                  'icon':
-                      IconData(data['icon'] ?? 0, fontFamily: 'MaterialIcons'),
+                  'icon': data['icon'],
                   'type': data['type'],
                 };
                 categories.add(category);
@@ -58,6 +57,7 @@ class CategoryBottomSheet extends StatelessWidget {
                       itemCount: categories.length,
                       itemBuilder: (context, index) {
                         final cat = categories[index];
+                        int icon = cat['icon'];
                         return GestureDetector(
                           onTap: () {
                             onCategorySelected(cat['id'],
@@ -67,7 +67,7 @@ class CategoryBottomSheet extends StatelessWidget {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             mainAxisSize: MainAxisSize.min,
-                            children: [Icon(cat['icon']), Text(cat['name'])],
+                            children: [_buildIcon(icon), Text(cat['name'])],
                           ),
                         );
                       },
@@ -79,6 +79,16 @@ class CategoryBottomSheet extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildIcon(int iconName) {
+    return Text(
+      String.fromCharCode(iconName),
+      style: const TextStyle(
+        fontSize: 24,
+        fontFamily: 'MaterialIcons',
+      ),
     );
   }
 }
