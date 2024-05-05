@@ -92,6 +92,115 @@ class _ChildAnalysisState extends State<ChildAnalysis> {
     });
   }
 
+  Future<void> getWeekly() async {
+    double total = 0;
+    double exp = 0;
+    double inc = 0;
+    DateTime selectedStartOfWeek =
+          _selectedDate.subtract(Duration(days: _selectedDate.weekday - 1));
+      DateTime selectedEndOfWeek = selectedStartOfWeek.add(Duration(days: 6));
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    final String userId = await DataService.getData();
+    QuerySnapshot dailySnapshot = await firestore
+        .collection('daily')
+        .where('user_id', isEqualTo: userId)
+        .where('date',
+                  isGreaterThanOrEqualTo: selectedStartOfWeek.toString())
+              .where('date', isLessThanOrEqualTo: selectedEndOfWeek.toString())
+        .get();
+    dataExp.clear();
+    dataInc.clear();
+    for (QueryDocumentSnapshot dailyDoc in dailySnapshot.docs) {
+      String categoryId = dailyDoc['category_id'];
+      double amount = double.parse(dailyDoc['amount']);
+
+      DocumentSnapshot categorySnapshot =
+          await firestore.collection('categories').doc(categoryId).get();
+
+      if (categorySnapshot.exists && categorySnapshot['type'] == 'expense') {
+        String categoryName = categorySnapshot['name'];
+        if (!dataExp.containsKey(categoryName)) {
+          dataExp[categoryName] = amount;
+        } else {
+          dataExp[categoryName] = dataExp[categoryName]! + amount;
+        }
+      }
+      if (categorySnapshot.exists && categorySnapshot['type'] == 'income') {
+        String categoryName = categorySnapshot['name'];
+        if (!dataInc.containsKey(categoryName)) {
+          dataInc[categoryName] = amount;
+        } else {
+          dataInc[categoryName] = dataInc[categoryName]! + amount;
+        }
+      }
+      if (categorySnapshot['type'] == 'income') {
+        inc += amount;
+      } else if (categorySnapshot['type'] == 'expense') {
+        exp += amount;
+      }
+    }
+    total = inc - exp;
+    setState(() {
+      totalAmt = total;
+      totalExpenses = exp;
+      totalIncome = inc;
+      dataLoaded = true;
+    });
+  }
+
+Future<void> getDay() async {
+    double total = 0;
+    double exp = 0;
+    double inc = 0;
+    final String selectedDateString =
+          DateFormat('yyyy-MM-dd').format(_selectedDate);
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    final String userId = await DataService.getData();
+    QuerySnapshot dailySnapshot = await firestore
+        .collection('daily')
+        .where('user_id', isEqualTo: userId)
+        .where('date', isEqualTo: selectedDateString)
+        .get();
+    dataExp.clear();
+    dataInc.clear();
+    for (QueryDocumentSnapshot dailyDoc in dailySnapshot.docs) {
+      String categoryId = dailyDoc['category_id'];
+      double amount = double.parse(dailyDoc['amount']);
+
+      DocumentSnapshot categorySnapshot =
+          await firestore.collection('categories').doc(categoryId).get();
+
+      if (categorySnapshot.exists && categorySnapshot['type'] == 'expense') {
+        String categoryName = categorySnapshot['name'];
+        if (!dataExp.containsKey(categoryName)) {
+          dataExp[categoryName] = amount;
+        } else {
+          dataExp[categoryName] = dataExp[categoryName]! + amount;
+        }
+      }
+      if (categorySnapshot.exists && categorySnapshot['type'] == 'income') {
+        String categoryName = categorySnapshot['name'];
+        if (!dataInc.containsKey(categoryName)) {
+          dataInc[categoryName] = amount;
+        } else {
+          dataInc[categoryName] = dataInc[categoryName]! + amount;
+        }
+      }
+      if (categorySnapshot['type'] == 'income') {
+        inc += amount;
+      } else if (categorySnapshot['type'] == 'expense') {
+        exp += amount;
+      }
+    }
+    total = inc - exp;
+    setState(() {
+      totalAmt = total;
+      totalExpenses = exp;
+      totalIncome = inc;
+      dataLoaded = true;
+    });
+  }
+
   late List<Widget> _pages;
 
   void updateSelectedDate(DateTime newDate, Function callback) {
@@ -114,6 +223,15 @@ class _ChildAnalysisState extends State<ChildAnalysis> {
     getDaily();
   }
 
+   String _filterSelection = 'monthly'; // Default filter selection
+
+  void _setFilter(String filter) {
+    setState(() {
+      _filterSelection = filter;
+    });
+    getDaily();
+  }
+
   int _currentIndex = 0;
   @override
   Widget build(BuildContext context) {
@@ -125,61 +243,151 @@ class _ChildAnalysisState extends State<ChildAnalysis> {
         child: Column(
           children: [
             Stack(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        _changeMonth(-1);
-                      },
-                      icon: const Icon(
-                        Icons.chevron_left,
-                        color: Color.fromARGB(255, 48, 2, 35),
-                      ),
+                children: [
+                  if (_filterSelection !=
+                      'weekly') // Display monthly or daily view
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            if (_filterSelection == 'daily') {
+                              setState(() {
+                                _selectedDate =
+                                    _selectedDate.subtract(Duration(days: 1));
+                              });
+                              getDay();
+                            } else {
+                              setState(() {
+                                _selectedDate = DateTime(_selectedDate.year,
+                                    _selectedDate.month - 1);
+                              });
+                              getDaily();
+                            }
+                          },
+                          icon: const Icon(
+                            Icons.chevron_left,
+                            color: Color.fromARGB(255, 48, 2, 35),
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          _filterSelection == 'daily'
+                              ? DateFormat.yMMMMd().format(_selectedDate)
+                              : DateFormat.yMMMM().format(_selectedDate),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            fontSize: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                        IconButton(
+                          onPressed: () {
+                            if (_filterSelection == 'daily') {
+                              setState(() {
+                                _selectedDate =
+                                    _selectedDate.add(Duration(days: 1));
+                              });
+                              getDay();
+                            } else {
+                              setState(() {
+                                _selectedDate = DateTime(_selectedDate.year,
+                                    _selectedDate.month + 1);
+                              });
+                              getDaily();
+                            }
+                          },
+                          icon: const Icon(
+                            Icons.chevron_right,
+                            color: Color.fromARGB(255, 48, 2, 35),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 5),
-                    Text(
-                      DateFormat.yMMMM().format(_selectedDate),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                        fontSize: 24,
-                      ),
+                  if (_filterSelection == 'weekly') // Display weekly view
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            setState(() {
+                              _selectedDate = _selectedDate
+                                  .subtract(const Duration(days: 7));
+                            });
+                            getWeekly();
+                          },
+                          icon: const Icon(
+                            Icons.chevron_left,
+                            color: Color.fromARGB(255, 48, 2, 35),
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                        Flexible(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                '${DateFormat.yMMMMd().format(_selectedDate.subtract(Duration(days: _selectedDate.weekday - 1)))} - ',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                  fontSize: 24,
+                                ),
+                              ),
+                              Text(
+                                DateFormat.yMMMMd().format(_selectedDate.add(Duration(days: 7 - _selectedDate.weekday))),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                  fontSize: 24,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                        IconButton(
+                          onPressed: () {
+                            setState(() {
+                              _selectedDate =
+                                  _selectedDate.add(const Duration(days: 7));
+                            });
+                            getWeekly();
+                          },
+                          icon: const Icon(
+                            Icons.chevron_right,
+                            color: Color.fromARGB(255, 48, 2, 35),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 5),
-                    IconButton(
-                      onPressed: () {
-                        _changeMonth(1);
-                      },
-                      icon: const Icon(
-                        Icons.chevron_right,
-                        color: Color.fromARGB(255, 48, 2, 35),
+                  Row(
+                    // Filter button
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => FilterSheet(
+                              currentFilter: _filterSelection,
+                              onFilterSelected: _setFilter,
+                            ),
+                          );
+                        },
+                        icon: const Icon(
+                          Icons.filter_list,
+                          color: Color.fromARGB(255, 48, 2, 35),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => const FilterSheet(),
-                        );
-                      },
-                      icon: const Icon(
-                        Icons.filter_list,
-                        color: Color.fromARGB(255, 48, 2, 35),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                    ],
+                  ),
+                ],
+              ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -338,6 +546,53 @@ class SelectOption extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Center(
       child: Text('Select an Option'),
+    );
+  }
+}
+
+class FilterSheet extends StatelessWidget {
+  final String currentFilter;
+  final Function(String) onFilterSelected;
+
+  const FilterSheet({
+    required this.currentFilter,
+    required this.onFilterSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Display Options'),
+      content: SingleChildScrollView(
+        child: ListBody(
+          children: <Widget>[
+            ListTile(
+              title: const Text('Weekly'),
+              onTap: () {
+                onFilterSelected('weekly');
+                Navigator.pop(context);
+              },
+              selected: currentFilter == 'weekly',
+            ),
+            ListTile(
+              title: const Text('Monthly'),
+              onTap: () {
+                onFilterSelected('monthly');
+                Navigator.pop(context);
+              },
+              selected: currentFilter == 'monthly',
+            ),
+            ListTile(
+              title: const Text('Daily'),
+              onTap: () {
+                onFilterSelected('daily');
+                Navigator.pop(context);
+              },
+              selected: currentFilter == 'daily',
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

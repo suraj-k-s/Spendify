@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pie_chart/pie_chart.dart';
-import 'package:spendify/Components/filtersheet.dart';
 import 'package:spendify/calendar.dart';
 import 'package:spendify/chart_expense.dart';
 import 'package:spendify/chart_income.dart';
@@ -33,6 +32,15 @@ class _AnalysisState extends State<Analysis> {
 
   bool dataLoaded = false;
 
+  String _filterSelection = 'monthly'; // Default filter selection
+
+  void _setFilter(String filter) {
+    setState(() {
+      _filterSelection = filter;
+    });
+    getDaily();
+  }
+
   Future<void> getDaily() async {
     double total = 0;
     double exp = 0;
@@ -53,6 +61,119 @@ class _AnalysisState extends State<Analysis> {
           .where('user_id', isEqualTo: user.uid)
           .where('date', isGreaterThanOrEqualTo: startDateString)
           .where('date', isLessThan: endDateString)
+          .get();
+      dataExp.clear();
+      dataInc.clear();
+      for (QueryDocumentSnapshot dailyDoc in dailySnapshot.docs) {
+        String categoryId = dailyDoc['category_id'];
+        double amount = double.parse(dailyDoc['amount']);
+
+        DocumentSnapshot categorySnapshot =
+            await firestore.collection('categories').doc(categoryId).get();
+
+        if (categorySnapshot.exists && categorySnapshot['type'] == 'expense') {
+          String categoryName = categorySnapshot['name'];
+          if (!dataExp.containsKey(categoryName)) {
+            dataExp[categoryName] = amount;
+          } else {
+            dataExp[categoryName] = dataExp[categoryName]! + amount;
+          }
+        }
+        if (categorySnapshot.exists && categorySnapshot['type'] == 'income') {
+          String categoryName = categorySnapshot['name'];
+          if (!dataInc.containsKey(categoryName)) {
+            dataInc[categoryName] = amount;
+          } else {
+            dataInc[categoryName] = dataInc[categoryName]! + amount;
+          }
+        }
+        if (categorySnapshot['type'] == 'income') {
+          inc += amount;
+        } else if (categorySnapshot['type'] == 'expense') {
+          exp += amount;
+        }
+      }
+      total = inc - exp;
+      setState(() {
+        totalAmt = total;
+        totalExpenses = exp;
+        totalIncome = inc;
+        dataLoaded = true;
+      });
+    }
+  }
+
+  Future<void> getWeekly() async {
+    double total = 0;
+    double exp = 0;
+    double inc = 0;
+    DateTime selectedStartOfWeek =
+        _selectedDate.subtract(Duration(days: _selectedDate.weekday - 1));
+    DateTime selectedEndOfWeek = selectedStartOfWeek.add(Duration(days: 6));
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      QuerySnapshot dailySnapshot = await firestore
+          .collection('daily')
+          .where('user_id', isEqualTo: user.uid)
+          .where('date', isGreaterThanOrEqualTo: selectedStartOfWeek.toString())
+          .where('date', isLessThanOrEqualTo: selectedEndOfWeek.toString())
+          .get();
+      dataExp.clear();
+      dataInc.clear();
+      for (QueryDocumentSnapshot dailyDoc in dailySnapshot.docs) {
+        String categoryId = dailyDoc['category_id'];
+        double amount = double.parse(dailyDoc['amount']);
+
+        DocumentSnapshot categorySnapshot =
+            await firestore.collection('categories').doc(categoryId).get();
+
+        if (categorySnapshot.exists && categorySnapshot['type'] == 'expense') {
+          String categoryName = categorySnapshot['name'];
+          if (!dataExp.containsKey(categoryName)) {
+            dataExp[categoryName] = amount;
+          } else {
+            dataExp[categoryName] = dataExp[categoryName]! + amount;
+          }
+        }
+        if (categorySnapshot.exists && categorySnapshot['type'] == 'income') {
+          String categoryName = categorySnapshot['name'];
+          if (!dataInc.containsKey(categoryName)) {
+            dataInc[categoryName] = amount;
+          } else {
+            dataInc[categoryName] = dataInc[categoryName]! + amount;
+          }
+        }
+        if (categorySnapshot['type'] == 'income') {
+          inc += amount;
+        } else if (categorySnapshot['type'] == 'expense') {
+          exp += amount;
+        }
+      }
+      total = inc - exp;
+      setState(() {
+        totalAmt = total;
+        totalExpenses = exp;
+        totalIncome = inc;
+        dataLoaded = true;
+      });
+    }
+  }
+
+  Future<void> getDay() async {
+    double total = 0;
+    double exp = 0;
+    double inc = 0;
+    final String selectedDateString =
+        DateFormat('yyyy-MM-dd').format(_selectedDate);
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      QuerySnapshot dailySnapshot = await firestore
+          .collection('daily')
+          .where('user_id', isEqualTo: user.uid)
+          .where('date', isEqualTo: selectedDateString)
           .get();
       dataExp.clear();
       dataInc.clear();
@@ -122,20 +243,39 @@ class _AnalysisState extends State<Analysis> {
   Widget build(BuildContext context) {
     return RefreshIndicator(
       onRefresh: () async {
-        await getDaily();
+        if (_filterSelection == "monthly") {
+          await getDaily();
+        } else if (_filterSelection == "weekly") {
+          await getWeekly();
+        } else if (_filterSelection == "daily") {
+          await getDay();
+        }
       },
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            Stack(
-              children: [
+      child: ListView(
+        children: [
+          Stack(
+            children: [
+              if (_filterSelection !=
+                  'weekly') // Display monthly or daily view
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.max,
                   children: [
                     IconButton(
                       onPressed: () {
-                        _changeMonth(-1);
+                        if (_filterSelection == 'daily') {
+                          setState(() {
+                            _selectedDate =
+                                _selectedDate.subtract(Duration(days: 1));
+                          });
+                          // getDay();
+                        } else {
+                          setState(() {
+                            _selectedDate = DateTime(
+                                _selectedDate.year, _selectedDate.month - 1);
+                          });
+                          getDaily();
+                        }
                       },
                       icon: const Icon(
                         Icons.chevron_left,
@@ -144,7 +284,9 @@ class _AnalysisState extends State<Analysis> {
                     ),
                     const SizedBox(width: 5),
                     Text(
-                      DateFormat.yMMMM().format(_selectedDate),
+                      _filterSelection == 'daily'
+                          ? DateFormat.yMMMMd().format(_selectedDate)
+                          : DateFormat.yMMMM().format(_selectedDate),
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.black,
@@ -154,7 +296,19 @@ class _AnalysisState extends State<Analysis> {
                     const SizedBox(width: 5),
                     IconButton(
                       onPressed: () {
-                        _changeMonth(1);
+                        if (_filterSelection == 'daily') {
+                          setState(() {
+                            _selectedDate =
+                                _selectedDate.add(Duration(days: 1));
+                          });
+                          // getDay();
+                        } else {
+                          setState(() {
+                            _selectedDate = DateTime(
+                                _selectedDate.year, _selectedDate.month + 1);
+                          });
+                          getDaily();
+                        }
                       },
                       icon: const Icon(
                         Icons.chevron_right,
@@ -163,124 +317,176 @@ class _AnalysisState extends State<Analysis> {
                     ),
                   ],
                 ),
+              if (_filterSelection == 'weekly') // Display weekly view
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.max,
                   children: [
                     IconButton(
                       onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => const FilterSheet(),
-                        );
+                        setState(() {
+                          _selectedDate =
+                              _selectedDate.subtract(const Duration(days: 7));
+                        });
+                        // getWeekly();
                       },
                       icon: const Icon(
-                        Icons.filter_list,
+                        Icons.chevron_left,
+                        color: Color.fromARGB(255, 48, 2, 35),
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Flexible(
+                      child: Text(
+                        '${DateFormat.yMMMMd().format(_selectedDate.subtract(Duration(days: _selectedDate.weekday - 1)))} - ${DateFormat.yMMMMd().format(_selectedDate.add(Duration(days: 7 - _selectedDate.weekday)))}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                          fontSize: 24,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    IconButton(
+                      onPressed: () {
+                        setState(() {
+                          _selectedDate =
+                              _selectedDate.add(const Duration(days: 7));
+                        });
+                        // getWeekly();
+                      },
+                      icon: const Icon(
+                        Icons.chevron_right,
                         color: Color.fromARGB(255, 48, 2, 35),
                       ),
                     ),
                   ],
                 ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Column(
-                  children: [
-                    const Text(
-                      "EXPENSE",
-                      style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
+              Row(
+                // Filter button
+                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => FilterSheet(
+                          currentFilter: _filterSelection,
+                          onFilterSelected: _setFilter,
+                        ),
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.filter_list,
+                      color: Color.fromARGB(255, 48, 2, 35),
                     ),
-                    Text(
-                      totalExpenses.toString(),
-                      style: const TextStyle(color: Colors.black),
-                    ),
-                  ],
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(
-                      width: 50,
-                    ),
-                    const Text(
-                      "INCOME",
-                      style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
-                    ),
-                    Text(
-                      totalIncome.toString(),
-                      style: const TextStyle(color: Colors.black),
-                    ),
-                  ],
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    const Text(
-                      "TOTAL",
-                      style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
-                    ),
-                    Text(
-                      totalAmt.toString(),
-                      style: const TextStyle(color: Colors.black),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(
-              height: 20,
-            ),
-            SizedBox(
-              width: 300,
-              child: DropdownButtonFormField(
-                decoration: const InputDecoration(
-                    hintText: 'Overview', border: OutlineInputBorder()),
-                value: _currentIndex,
-                hint: const Text('Overview'),
-                items: const [
-                  DropdownMenuItem(
-                    value: 0,
-                    child: Text('Select an Option',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        )),
-                  ),
-                  DropdownMenuItem(
-                    value: 1,
-                    child: Text('Chart Expense'),
-                  ),
-                  DropdownMenuItem(
-                    value: 2,
-                    child: Text('Chart Income'),
-                  ),
-                  DropdownMenuItem(
-                    value: 3,
-                    child: Text('Calendar',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        )),
                   ),
                 ],
-                onChanged: (newIndex) {
-                  if (newIndex == 3) {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => MyCalendar(),));
-                  }
-                  else{
-                    setState(() {
-                      _currentIndex = newIndex!;
-                    });
-                  }
-                },
               ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Column(
+                children: [
+                  const Text(
+                    "EXPENSE",
+                    style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
+                  ),
+                  Text(
+                    totalExpenses.toString(),
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                ],
+              ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(
+                    width: 50,
+                  ),
+                  const Text(
+                    "INCOME",
+                    style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
+                  ),
+                  Text(
+                    totalIncome.toString(),
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                ],
+              ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  const Text(
+                    "TOTAL",
+                    style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
+                  ),
+                  Text(
+                    totalAmt.toString(),
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(
+            height: 20,
+          ),
+          Container(
+            padding: EdgeInsets.all(10),
+            width: 300,
+            child: DropdownButtonFormField(
+              decoration: const InputDecoration(
+                  hintText: 'Overview', border: OutlineInputBorder()),
+              value: _currentIndex,
+              hint: const Text('Overview'),
+              items: const [
+                DropdownMenuItem(
+                  value: 0,
+                  child: Text('Select an Option',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      )),
+                ),
+                DropdownMenuItem(
+                  value: 1,
+                  child: Text('Chart Expense'),
+                ),
+                DropdownMenuItem(
+                  value: 2,
+                  child: Text('Chart Income'),
+                ),
+                DropdownMenuItem(
+                  value: 3,
+                  child: Text('Calendar',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      )),
+                ),
+              ],
+              onChanged: (newIndex) {
+                if (newIndex == 3) {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MyCalendar(),
+                      ));
+                } else {
+                  setState(() {
+                    _currentIndex = newIndex!;
+                  });
+                }
+              },
             ),
-            const SizedBox(
-              height: 20,
-            ),
-            _pages[_currentIndex],
-          ],
-        ),
+          ),
+          const SizedBox(
+            height: 20,
+          ),
+          _pages[_currentIndex],
+        ],
       ),
     );
   }
@@ -338,6 +544,53 @@ class SelectOption extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Center(
       child: Text('Select an Option'),
+    );
+  }
+}
+
+class FilterSheet extends StatelessWidget {
+  final String currentFilter;
+  final Function(String) onFilterSelected;
+
+  const FilterSheet({
+    required this.currentFilter,
+    required this.onFilterSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Display Options'),
+      content: SingleChildScrollView(
+        child: ListBody(
+          children: <Widget>[
+            ListTile(
+              title: const Text('Weekly'),
+              onTap: () {
+                onFilterSelected('weekly');
+                Navigator.pop(context);
+              },
+              selected: currentFilter == 'weekly',
+            ),
+            ListTile(
+              title: const Text('Monthly'),
+              onTap: () {
+                onFilterSelected('monthly');
+                Navigator.pop(context);
+              },
+              selected: currentFilter == 'monthly',
+            ),
+            ListTile(
+              title: const Text('Daily'),
+              onTap: () {
+                onFilterSelected('daily');
+                Navigator.pop(context);
+              },
+              selected: currentFilter == 'daily',
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

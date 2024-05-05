@@ -7,7 +7,6 @@ import 'package:spendify/blog.dart';
 import 'package:spendify/child/analysis.dart';
 import 'package:spendify/child/budget.dart';
 import 'package:spendify/child/calculator.dart';
-import 'package:spendify/child/calendar.dart';
 import 'package:spendify/child/homepage.dart';
 import 'package:spendify/feedback.dart';
 import 'package:spendify/help.dart';

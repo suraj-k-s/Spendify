@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:spendify/Components/filtersheet.dart';
 import 'package:spendify/Components/popupdaily.dart';
 
 class HomePage extends StatefulWidget {
@@ -77,12 +76,12 @@ class _HomePageState extends State<HomePage> {
 
           if (catdata?['type'] == 'income') {
             inc += amt;
-          } else if(catdata?['type'] == 'expense') {
+          } else if (catdata?['type'] == 'expense') {
             exp += amt;
           }
         }
-        if(data['type']!='goals'){
-        daily.add(data);
+        if (data['type'] != 'goals') {
+          daily.add(data);
         }
       }
       total = inc - exp;
@@ -97,6 +96,139 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> getWeekly() async {
+    try {
+      double total = 0;
+      double exp = 0;
+      double inc = 0;
+      final user = FirebaseAuth.instance.currentUser;
+      final userId = user?.uid;
+      List<Map<String, dynamic>> weekly = [];
+
+      // Calculate the start and end dates of the selected week
+      DateTime selectedStartOfWeek =
+          _selectedDate.subtract(Duration(days: _selectedDate.weekday - 1));
+      DateTime selectedEndOfWeek = selectedStartOfWeek.add(Duration(days: 6));
+
+      QuerySnapshot<Map<String, dynamic>> totalSnapshot =
+          await FirebaseFirestore.instance
+              .collection('daily')
+              .where('user_id', isEqualTo: userId)
+              .where('date',
+                  isGreaterThanOrEqualTo: selectedStartOfWeek.toString())
+              .where('date', isLessThanOrEqualTo: selectedEndOfWeek.toString())
+              .get();
+
+      for (QueryDocumentSnapshot<Map<String, dynamic>> documentSnapshot
+          in totalSnapshot.docs) {
+        Map<String, dynamic> data = documentSnapshot.data();
+        double amt = double.parse(data['amount']);
+        data['id'] = documentSnapshot.id;
+        DocumentSnapshot<Map<String, dynamic>> catSnap = await FirebaseFirestore
+            .instance
+            .collection('categories')
+            .doc(data['category_id'])
+            .get();
+        if (catSnap.exists) {
+          Map<String, dynamic>? catdata = catSnap.data();
+          if (catdata != null) {
+            data['category'] = catdata['name'];
+            data['icon'] = catdata['icon'];
+            data['type'] = catdata['type'];
+          }
+
+          if (catdata?['type'] == 'income') {
+            inc += amt;
+          } else if (catdata?['type'] == 'expense') {
+            exp += amt;
+          }
+        }
+        if (data['type'] != 'goals') {
+          weekly.add(data);
+        }
+      }
+      total = inc - exp;
+      setState(() {
+        dailyData = weekly;
+        totalAmt = total;
+        totalExpenses = exp;
+        totalIncome = inc;
+      });
+    } catch (e) {
+      print("Error Weekly: $e");
+    }
+  }
+
+  Future<void> getDay() async {
+    try {
+      double total = 0;
+      double exp = 0;
+      double inc = 0;
+      final user = FirebaseAuth.instance.currentUser;
+      final userId = user?.uid;
+      List<Map<String, dynamic>> daily = [];
+
+      // Format the selected date to match the date format in Firestore
+      final String selectedDateString =
+          DateFormat('yyyy-MM-dd').format(_selectedDate);
+
+      print("Date: $userId");
+      QuerySnapshot<Map<String, dynamic>> totalSnapshot =
+          await FirebaseFirestore.instance
+              .collection('daily')
+              .where('user_id', isEqualTo: userId)
+              .where('date', isEqualTo: selectedDateString)
+              .get();
+
+      for (QueryDocumentSnapshot<Map<String, dynamic>> documentSnapshot
+          in totalSnapshot.docs) {
+        Map<String, dynamic> data = documentSnapshot.data();
+        double amt = double.parse(data['amount']);
+        data['id'] = documentSnapshot.id;
+        DocumentSnapshot<Map<String, dynamic>> catSnap = await FirebaseFirestore
+            .instance
+            .collection('categories')
+            .doc(data['category_id'])
+            .get();
+        if (catSnap.exists) {
+          Map<String, dynamic>? catdata = catSnap.data();
+          if (catdata != null) {
+            data['category'] = catdata['name'];
+            data['icon'] = catdata['icon'];
+            data['type'] = catdata['type'];
+          }
+
+          if (catdata?['type'] == 'income') {
+            inc += amt;
+          } else if (catdata?['type'] == 'expense') {
+            exp += amt;
+          }
+        }
+        if (data['type'] != 'goals') {
+          daily.add(data);
+        }
+      }
+      total = inc - exp;
+      setState(() {
+        dailyData = daily;
+        totalAmt = total;
+        totalExpenses = exp;
+        totalIncome = inc;
+      });
+    } catch (e) {
+      print("Error Daily: $e");
+    }
+  }
+
+  String _filterSelection = 'monthly'; // Default filter selection
+
+  void _setFilter(String filter) {
+    setState(() {
+      _filterSelection = filter;
+    });
+    getDaily();
+  }
+
   @override
   Widget build(BuildContext context) {
     return buildMainContent();
@@ -105,7 +237,13 @@ class _HomePageState extends State<HomePage> {
   Widget buildMainContent() {
     return RefreshIndicator(
       onRefresh: () async {
-        await getDaily();
+        if (_filterSelection == "monthly") {
+          await getDaily();
+        } else if (_filterSelection == "weekly") {
+          await getWeekly();
+        } else if (_filterSelection == "daily") {
+          await getDay();
+        }
       },
       child: ListView(
         children: [
@@ -113,41 +251,128 @@ class _HomePageState extends State<HomePage> {
             children: [
               Stack(
                 children: [
+                  if (_filterSelection !=
+                      'weekly') // Display monthly or daily view
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            if (_filterSelection == 'daily') {
+                              setState(() {
+                                _selectedDate =
+                                    _selectedDate.subtract(Duration(days: 1));
+                              });
+                              getDay();
+                            } else {
+                              setState(() {
+                                _selectedDate = DateTime(_selectedDate.year,
+                                    _selectedDate.month - 1);
+                              });
+                              getDaily();
+                            }
+                          },
+                          icon: const Icon(
+                            Icons.chevron_left,
+                            color: Color.fromARGB(255, 48, 2, 35),
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          _filterSelection == 'daily'
+                              ? DateFormat.yMMMMd().format(_selectedDate)
+                              : DateFormat.yMMMM().format(_selectedDate),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            fontSize: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                        IconButton(
+                          onPressed: () {
+                            if (_filterSelection == 'daily') {
+                              setState(() {
+                                _selectedDate =
+                                    _selectedDate.add(Duration(days: 1));
+                              });
+                              getDay();
+                            } else {
+                              setState(() {
+                                _selectedDate = DateTime(_selectedDate.year,
+                                    _selectedDate.month + 1);
+                              });
+                              getDaily();
+                            }
+                          },
+                          icon: const Icon(
+                            Icons.chevron_right,
+                            color: Color.fromARGB(255, 48, 2, 35),
+                          ),
+                        ),
+                      ],
+                    ),
+                  if (_filterSelection == 'weekly') // Display weekly view
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            setState(() {
+                              _selectedDate = _selectedDate
+                                  .subtract(const Duration(days: 7));
+                            });
+                            getWeekly();
+                          },
+                          icon: const Icon(
+                            Icons.chevron_left,
+                            color: Color.fromARGB(255, 48, 2, 35),
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                        Flexible(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                '${DateFormat.yMMMMd().format(_selectedDate.subtract(Duration(days: _selectedDate.weekday - 1)))} - ',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                  fontSize: 24,
+                                ),
+                              ),
+                              Text(
+                                DateFormat.yMMMMd().format(_selectedDate.add(Duration(days: 7 - _selectedDate.weekday))),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                  fontSize: 24,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                        IconButton(
+                          onPressed: () {
+                            setState(() {
+                              _selectedDate =
+                                  _selectedDate.add(const Duration(days: 7));
+                            });
+                            getWeekly();
+                          },
+                          icon: const Icon(
+                            Icons.chevron_right,
+                            color: Color.fromARGB(255, 48, 2, 35),
+                          ),
+                        ),
+                      ],
+                    ),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      IconButton(
-                        onPressed: () {
-                          _changeMonth(-1);
-                        },
-                        icon: const Icon(
-                          Icons.chevron_left,
-                          color: Color.fromARGB(255, 48, 2, 35),
-                        ),
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        DateFormat.yMMMM().format(_selectedDate),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                          fontSize: 24,
-                        ),
-                      ),
-                      const SizedBox(width: 5),
-                      IconButton(
-                        onPressed: () {
-                          _changeMonth(1);
-                        },
-                        icon: const Icon(
-                          Icons.chevron_right,
-                          color: Color.fromARGB(255, 48, 2, 35),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Row(
+                    // Filter button
                     mainAxisAlignment: MainAxisAlignment.end,
                     mainAxisSize: MainAxisSize.max,
                     children: [
@@ -155,7 +380,10 @@ class _HomePageState extends State<HomePage> {
                         onPressed: () {
                           showDialog(
                             context: context,
-                            builder: (context) => const FilterSheet(),
+                            builder: (context) => FilterSheet(
+                              currentFilter: _filterSelection,
+                              onFilterSelected: _setFilter,
+                            ),
                           );
                         },
                         icon: const Icon(
@@ -226,15 +454,17 @@ class _HomePageState extends State<HomePage> {
                   final String note = daily['note'] ?? '';
                   final timeString = daily['time'] ?? '';
                   final formattedTimeString = '$timeString:00';
-                  final time = DateFormat('HH:mm:ss').parse(formattedTimeString);
+                  final time =
+                      DateFormat('HH:mm:ss').parse(formattedTimeString);
                   final DateTime date = DateTime.parse(daily['date']);
                   final String bill = daily['bill'] ?? '';
-                
+
                   final int iconName = daily['icon'] ?? 0;
                   final String type = daily['type'] ?? '';
                   final String category = daily['category'] ?? '';
                   final String id = daily['id'] ?? '';
-                  Color amountColor = type == 'expense' ? Colors.red : Colors.green;
+                  Color amountColor =
+                      type == 'expense' ? Colors.red : Colors.green;
                   if (type == 'expense') {
                     amount = "-${daily['amount']}";
                   } else {
@@ -270,7 +500,8 @@ class _HomePageState extends State<HomePage> {
                           child: _buildIcon(iconName),
                         ),
                         title: Text(category,
-                            style: const TextStyle(fontWeight: FontWeight.bold)),
+                            style:
+                                const TextStyle(fontWeight: FontWeight.bold)),
                         trailing: Text(
                           amount,
                           style: TextStyle(fontSize: 18, color: amountColor),
@@ -301,5 +532,52 @@ class _HomePageState extends State<HomePage> {
   void dispose() {
     // Dispose of your animation controllers here
     super.dispose();
+  }
+}
+
+class FilterSheet extends StatelessWidget {
+  final String currentFilter;
+  final Function(String) onFilterSelected;
+
+  const FilterSheet({
+    required this.currentFilter,
+    required this.onFilterSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Display Options'),
+      content: SingleChildScrollView(
+        child: ListBody(
+          children: <Widget>[
+            ListTile(
+              title: const Text('Weekly'),
+              onTap: () {
+                onFilterSelected('weekly');
+                Navigator.pop(context);
+              },
+              selected: currentFilter == 'weekly',
+            ),
+            ListTile(
+              title: const Text('Monthly'),
+              onTap: () {
+                onFilterSelected('monthly');
+                Navigator.pop(context);
+              },
+              selected: currentFilter == 'monthly',
+            ),
+            ListTile(
+              title: const Text('Daily'),
+              onTap: () {
+                onFilterSelected('daily');
+                Navigator.pop(context);
+              },
+              selected: currentFilter == 'daily',
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
