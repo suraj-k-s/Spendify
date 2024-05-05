@@ -3,34 +3,30 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spendify/about.dart';
-import 'package:spendify/analysis.dart';
 import 'package:spendify/blog.dart';
-import 'package:spendify/budget.dart';
-import 'package:spendify/category.dart';
-import 'package:spendify/child.dart';
+import 'package:spendify/child/analysis.dart';
+import 'package:spendify/child/budget.dart';
+import 'package:spendify/child/calculator.dart';
+import 'package:spendify/child/calendar.dart';
+import 'package:spendify/child/homepage.dart';
 import 'package:spendify/feedback.dart';
-import 'package:spendify/goalview.dart';
 import 'package:spendify/help.dart';
-import 'package:spendify/homepage.dart';
-import 'package:spendify/calculator.dart';
 import 'package:spendify/login_screen.dart';
 import 'package:spendify/view_profile.dart';
 
-class DashBoard extends StatefulWidget {
-  const DashBoard({super.key});
+class ChildDashBoard extends StatefulWidget {
+  const ChildDashBoard({super.key});
 
   @override
-  State<DashBoard> createState() => _DashBoardState();
+  State<ChildDashBoard> createState() => _ChildDashBoardState();
 }
 
-class _DashBoardState extends State<DashBoard> {
+class _ChildDashBoardState extends State<ChildDashBoard> {
   int _currentIndex = 0;
   final List<Widget> _pages = [
-    const HomePage(),
-    const Goalview(),
-    const Analysis(),
-    const Budget(),
-    const Categories()
+    const ChildHomePage(),
+    const ChildAnalysis(),
+    const ChildBudget(),
   ];
 
   void _logout() async {
@@ -62,7 +58,7 @@ class _DashBoardState extends State<DashBoard> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const Calenders(),
+              builder: (context) => const ChildCalculator(),
             ),
           );
         },
@@ -85,7 +81,7 @@ class _DashBoardState extends State<DashBoard> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const ViewProfile(who: "users",),
+                      builder: (context) => const ViewProfile(who: 'child',),
                     ));
               },
             ),
@@ -127,18 +123,6 @@ class _DashBoardState extends State<DashBoard> {
                     MaterialPageRoute(
                       builder: (context) => const Blog(),
                     ));
-                
-              },
-            ),
-             ListTile(
-              title: const Text("Invite Child"),
-              onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const Invitechild(),
-                    ));
-                
               },
             ),
             ListTile(
@@ -166,18 +150,10 @@ class _DashBoardState extends State<DashBoard> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.sports_basketball_outlined),
-            label: 'Goals',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.pie_chart),
             label: 'Analysis',
           ),
           BottomNavigationBarItem(icon: Icon(Icons.receipt), label: 'Budget'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.category),
-            label: 'Category',
-          ),
         ],
       ),
     );

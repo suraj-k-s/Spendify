@@ -2,7 +2,6 @@
 
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -10,14 +9,15 @@ import 'package:spendify/Components/category_sheet.dart';
 import 'package:math_expressions/math_expressions.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:spendify/dashboard_screen.dart';
+import 'package:spendify/child/dashboard_screen.dart';
+import 'package:spendify/service/parentdata.dart';
 
-class Calenders extends StatefulWidget {
+class ChildCalculator extends StatefulWidget {
   final String note = '';
   final String type = 'income';
   final String amt = '0';
   final String category = '';
-  const Calenders(
+  const ChildCalculator(
       {super.key,
       String id = '',
       String type = 'income',
@@ -25,10 +25,10 @@ class Calenders extends StatefulWidget {
       String category = ''});
 
   @override
-  State<Calenders> createState() => _CalendersState();
+  State<ChildCalculator> createState() => _ChildCalculatorState();
 }
 
-class _CalendersState extends State<Calenders> {
+class _ChildCalculatorState extends State<ChildCalculator> {
   String expression = '';
   String result = '0';
   bool _isIncomeSelected = true;
@@ -106,8 +106,7 @@ class _CalendersState extends State<Calenders> {
       DateTime now = DateTime.now();
       DateTime firstDayOfMonth = DateTime(now.year, now.month, 1);
       DateTime lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
-      final user = FirebaseAuth.instance.currentUser;
-      final userId = user?.uid;
+      final userId = await DataService.getData();
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection('daily')
           .where('user_id', isEqualTo: userId)
@@ -191,8 +190,7 @@ class _CalendersState extends State<Calenders> {
     String formattedDate = DateFormat('yyyy-MM-dd').format(_selectedDate);
     String formattedTime = '${_selectedTime.hour}:${_selectedTime.minute}';
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      final userId = user?.uid;
+      final userId = await DataService.getData();
       DocumentReference newDocumentRef =
           await _firestore.collection('daily').add({
         'user_id': userId,
@@ -239,7 +237,7 @@ class _CalendersState extends State<Calenders> {
     Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => const DashBoard(),
+          builder: (context) => const ChildDashBoard(),
         ));
   }
 

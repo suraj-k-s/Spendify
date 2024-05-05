@@ -12,6 +12,7 @@ class Budgetlimt extends StatefulWidget {
   final String category;
   final int icon;
   final double value;
+  final bool edit;
   const Budgetlimt({
     super.key,
     required this.date,
@@ -22,6 +23,7 @@ class Budgetlimt extends StatefulWidget {
     required this.category,
     required this.icon,
     required this.value,
+    this.edit=true
   });
 
   @override
@@ -95,7 +97,7 @@ class _BudgetlimtState extends State<Budgetlimt> {
               Text("Remaining: ${remaining.toString()}"),
             ],
           ),
-          trailing: PopupMenuButton(
+          trailing: widget.edit ? PopupMenuButton(
             itemBuilder: (context) => [
               const PopupMenuItem(
                 value: 'edit',
@@ -123,7 +125,7 @@ class _BudgetlimtState extends State<Budgetlimt> {
                 deleteItem(widget.id);
               }
             },
-          ),
+          ): null,
         ),
         Padding(
           padding: const EdgeInsets.only(left: 25, right: 25),

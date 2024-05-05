@@ -9,8 +9,8 @@ import 'package:spendify/dashboard_screen.dart';
 
 class EditProfile extends StatefulWidget {
   final String? userId;
-
-  const EditProfile({super.key, required this.userId});
+  final String who;
+  const EditProfile({super.key, required this.userId, required this.who});
 
   @override
   State<EditProfile> createState() => _EditProfileState();
@@ -43,7 +43,7 @@ class _EditProfileState extends State<EditProfile> {
   void updateProfile() async {
     if (widget.userId != null) {
       final userDoc =
-          FirebaseFirestore.instance.collection('users').doc(widget.userId);
+          FirebaseFirestore.instance.collection(widget.who).doc(widget.userId);
 
       // Check if any data has changed
       if (nameController.text != name ||
@@ -117,7 +117,6 @@ class _EditProfileState extends State<EditProfile> {
           final childData = documentSnapshot.data();
           setState(() {
             name = childData?['name'] ?? 'Name not Found';
-            dob = childData?['dateOfBirth'] as String? ?? 'DOB not Found';
             selectedGender =
                 childData?['gender'] as String? ?? 'Gender not Found';
 
@@ -154,33 +153,7 @@ class _EditProfileState extends State<EditProfile> {
     }
   }
 
-  void deleteChild() async {
-    if (widget.userId != null) {
-      try {
-        final userDoc =
-            FirebaseFirestore.instance.collection('child').doc(widget.userId);
-
-        await userDoc.delete();
-
-        // Show a success message or navigate to another page.
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Child deleted successfully'),
-        ));
-
-        // Redirect to ChildDashboard after deletion
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const DashBoard()),
-        );
-      } catch (error) {
-        print('Error deleting user data: $error');
-        // Handle the error.
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Error deleting child: $error'),
-        ));
-      }
-    }
-  }
+  
 
   bool check = false;
   @override
@@ -274,16 +247,7 @@ class _EditProfileState extends State<EditProfile> {
                       },
                     ),
                   ),
-                  ListTile(
-                    title: Text('Date of Birth: $dob'),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () {
-                        dobController.text = dob;
-                        _selectDate();
-                      },
-                    ),
-                  ),
+                  
                   const SizedBox(height: 20.0),
                   const Padding(
                     padding: EdgeInsets.all(8.0),
@@ -309,12 +273,7 @@ class _EditProfileState extends State<EditProfile> {
                     },
                     child: const Text('Update'),
                   ),
-                  ElevatedButton(
-                    onPressed: () {
-                      deleteChild();
-                    },
-                    child: const Text('Delete'),
-                  ),
+                  
                 ],
               ),
             ),

@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously, avoid_print, unused_element
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -11,10 +9,11 @@ import 'package:spendify/login_screen.dart';
 import 'dart:io';
 import 'package:spendify/main.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:progress_dialog_null_safe/progress_dialog_null_safe.dart';
+import 'package:spendify/referalscannner.dart';
 
 class RegistrationScreen extends StatefulWidget {
-  const RegistrationScreen({super.key});
+  final String refId;
+  const RegistrationScreen({super.key, this.refId = ''});
 
   @override
   State<RegistrationScreen> createState() => _RegistrationScreenState();
@@ -31,13 +30,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   String? _imageUrl;
   String? _selectedGender = '';
   bool genderCheck = true;
-
-  late ProgressDialog _progressDialog;
+  bool _loading = false;
 
   @override
   void initState() {
     super.initState();
-    _progressDialog = ProgressDialog(context);
   }
 
   bool _obscureText = true;
@@ -61,31 +58,40 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   Future<void> _registerUser() async {
     try {
-      if (_formKey.currentState?.validate() ?? false) {// if all fields are entered
-        _progressDialog.show();//loading key, its an external library
+      if (_formKey.currentState?.validate() ?? false) {
+        setState(() {
+          _loading = true;
+        });
 
-        UserCredential userCredential = // creates an obj which has UserId
-            await FirebaseAuth.instance.createUserWithEmailAndPassword(  //await is used to wait a function
-          email: _emailController.text, // email ans password are textfileds so .text
-          password: _passController.text,//to create password and email
+        UserCredential userCredential =
+            await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: _emailController.text,
+          password: _passController.text,
         );
-
-        await _storeUserData(userCredential.user!.uid);//userId is passed to the function
-        Fluttertoast.showToast(// showws a box with msg
+        if (widget.refId == '') {
+          await _storeUserData(userCredential.user!.uid);
+        } else {
+          await _storeChildData(userCredential.user!.uid);
+        }
+        Fluttertoast.showToast(
           msg: "Registration Successful",
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           backgroundColor: Colors.green,
           textColor: Colors.white,
         );
-        _progressDialog.hide();
-        Navigator.pushReplacement(// moves to login scrren after regi
+        setState(() {
+          _loading = false;
+        });
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const LoginScreen()),
         );
       }
-    } catch (e) { // else part shown in catch
-      _progressDialog.hide();
+    } catch (e) {
+      setState(() {
+        _loading = false;
+      });
       Fluttertoast.showToast(
         msg: "Registration Failed",
         toastLength: Toast.LENGTH_SHORT,
@@ -96,65 +102,77 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       if (kDebugMode) {
         print("Error registering user: $e");
       }
-      // Handle error, show message, or take appropriate action
+    }
+  }
+
+  Future<void> _storeChildData(String userId) async {
+    try {
+      final FirebaseFirestore firestore = FirebaseFirestore.instance;
+      await firestore.collection('child').doc(userId).set({
+        'name': _nameController.text,
+        'email': _emailController.text,
+        'phone': _phoneController.text,
+        'gender': _selectedGender,
+        'password': _passController.text,
+        'parent_id': widget.refId,
+      });
+
+      await _uploadImage(userId);
+      await _storeCategory(userId);
+    } catch (e) {
+      print("Error storing user data: $e");
     }
   }
 
   Future<void> _storeUserData(String userId) async {
     try {
-      final FirebaseFirestore firestore = FirebaseFirestore.instance;//an objcet firestore is created which is used to store FirebaseFirestore.instance
-      await firestore.collection('users').doc(userId).set({ //2 queries
-      // here doc name is passed using .doc()
-      //instaed of userId we can also pass where clause which selects multiple datas
+      final FirebaseFirestore firestore = FirebaseFirestore.instance;
+      await firestore.collection('users').doc(userId).set({
         'name': _nameController.text,
         'email': _emailController.text,
         'phone': _phoneController.text,
-        'gender': _selectedGender,// radio button; so selected button is stored to a variable
+        'gender': _selectedGender,
         'password': _passController.text,
-        // Add more fields as needed
       });
- 
- // uploading user image
-      await _uploadImage(userId);//passing key as userId
-      await _storeCategory(userId);
+
+      await _uploadImage(userId);
+      if (widget.refId == '') {
+        await _storeCategory(userId);
+      }
     } catch (e) {
       print("Error storing user data: $e");
-      // Handle error, show message or take appropriate action
     }
   }
 
   Future<void> _uploadImage(String userId) async {
     try {
-      if (_selectedImage != null) { // if an img is uploaded
+      if (_selectedImage != null) {
         Reference ref =
             FirebaseStorage.instance.ref().child('user_images/$userId.jpg');
-        UploadTask uploadTask = ref.putFile(File(_selectedImage!.path));//path of img
+        UploadTask uploadTask = ref.putFile(File(_selectedImage!.path));
         TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() => null);
 
-        String imageUrl = await taskSnapshot.ref.getDownloadURL();// stores the url of img to imgeUrl
+        String imageUrl = await taskSnapshot.ref.getDownloadURL();
 
         await FirebaseFirestore.instance
             .collection('users')
             .doc(userId)
-            .update({ // updates image to imageurl
+            .update({
           'imageUrl': imageUrl,
         });
       }
     } catch (e) {
       print("Error uploading image: $e");
-      // Handle error, show message or take appropriate action
     }
   }
 
   Future<void> _storeCategory(userId) async {
-    // 2nd querry
-    // no doc name is passed
-    final firestore = FirebaseFirestore.instance; // creates an ob firestore
+    final firestore = FirebaseFirestore.instance;
     final categoriesCollection = firestore.collection('categories');
 
     try {
       for (var category in categoryData) {
-        await categoriesCollection.add({// in this querry we use 'add'
+        await categoriesCollection.add({
           'userId': userId,
           'name': category['name'],
           'icon': category['icon'].codePoint,
@@ -167,7 +185,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     }
   }
 
-  String? _validateName(String? value) {// if name field is  empty
+  String? _validateName(String? value) {
     if (value == null || value.isEmpty) {
       return 'Please enter a valid name';
     }
@@ -209,7 +227,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     if (value == null || value.isEmpty) {
       return 'Please enter your phone number';
     }
-    // You can add more complex validation if needed
+
     return null;
   }
 
@@ -247,7 +265,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           child: Column(
             children: [
               const SizedBox(
-                height: 200,
+                height: 50,
               ),
               Form(
                 key: _formKey,
@@ -267,9 +285,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                         const Text(
                             'Please make sure all the details are right.'),
-                        const SizedBox(
-                          height: 20,
-                        ),
+                        TextButton(
+                            onPressed: () {
+                              Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => QRScanner(),
+                                  ));
+                            },
+                            child: Text('Click here if you have referal')),
                         Center(
                           child: GestureDetector(
                             onTap: _pickImage,
@@ -474,27 +498,39 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           child: Row(
                             children: [
                               Expanded(
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    if (genderCheck &&
-                                        _formKey.currentState!.validate()) {
-                                      _registerUser();
-                                    }
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.primaryColor,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10.0),
-                                    ),
-                                    padding: const EdgeInsets.fromLTRB(
-                                        10.0, 15, 10.0, 15),
-                                  ),
-                                  child: const Text(
-                                    'Register',
-                                    style: TextStyle(
-                                        fontSize: 20, color: AppColors.white),
-                                  ),
-                                ),
+                                child: _loading
+                                    ? Center(
+                                        child: SizedBox(
+                                          height: 30,
+                                          width: 30,
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                      )
+                                    : ElevatedButton(
+                                        onPressed: () {
+                                          if (genderCheck &&
+                                              _formKey.currentState!
+                                                  .validate()) {
+                                            _registerUser();
+                                          }
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor:
+                                              AppColors.primaryColor,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10.0),
+                                          ),
+                                          padding: const EdgeInsets.fromLTRB(
+                                              10.0, 15, 10.0, 15),
+                                        ),
+                                        child: const Text(
+                                          'Register',
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              color: AppColors.white),
+                                        ),
+                                      ),
                               ),
                             ],
                           ),

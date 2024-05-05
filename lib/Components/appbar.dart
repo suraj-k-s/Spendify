@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:spendify/main.dart';
-import 'package:spendify/settings.dart';
 
 class CustomAppBar extends StatefulWidget {
   final Color bgColor;
@@ -31,25 +29,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
                       Navigator.pop(context);
                     },
                     icon: const Icon(Icons.arrow_back_ios_new)),
-                if (widget.settings)
-                  Container(
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.primaryColor,
-                    ),
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.settings,
-                        color: AppColors.white,
-                      ),
-                      onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const SettingsScreen()));
-                      },
-                    ),
-                  ),
+                
               ],
             ),
           ],
