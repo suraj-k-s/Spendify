@@ -84,17 +84,15 @@ class Categories extends StatelessWidget {
               final category = {
                 'id': doc.id,
                 'name': data['name'],
-                'icon':
-                    IconData(data['icon'] ?? 0, fontFamily: 'MaterialIcons'),
+                'icon': data['icon'],
                 'type': data['type'],
               };
 
               if (data['type'] == 'income') {
                 incomeCategories.add(category);
-              } else if(data['type'] == 'expense'){
+              } else if (data['type'] == 'expense') {
                 expenseCategories.add(category);
-              }
-              else{
+              } else {
                 goalCategories.add(category);
               }
             }
@@ -132,7 +130,7 @@ class Categories extends StatelessWidget {
                       return ListTile(
                         leading: CircleAvatar(
                           backgroundColor: randomColor,
-                          child: Icon(category['icon']),
+                          child: _buildIcon(category['icon']),
                         ),
                         title: Text(
                           category['name'],
@@ -195,7 +193,7 @@ class Categories extends StatelessWidget {
                       return ListTile(
                         leading: CircleAvatar(
                           backgroundColor: randomColor,
-                          child: Icon(category['icon']),
+                          child: _buildIcon(category['icon']),
                         ),
                         title: Text(
                           category['name'],
@@ -341,6 +339,7 @@ class Categories extends StatelessWidget {
       },
     );
   }
+
   Widget _buildIcon(int iconName) {
     return Text(
       String.fromCharCode(iconName),
