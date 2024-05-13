@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pie_chart/pie_chart.dart';
 import 'package:spendify/calendar.dart';
 import 'package:spendify/chart_expense.dart';
 import 'package:spendify/chart_income.dart';
+import 'package:spendify/service/userData.dart';
 
 class Analysis extends StatefulWidget {
   const Analysis({super.key});
@@ -22,16 +22,7 @@ class _AnalysisState extends State<Analysis> {
   double totalExpenses = 0.0;
   double totalIncome = 0.0;
   final DateFormat dateFormat = DateFormat('yyyy-MM-dd');
-  void _changeMonth(int increment) {
-    setState(() {
-      _selectedDate =
-          DateTime(_selectedDate.year, _selectedDate.month + increment);
-    });
-    getDaily();
-  }
-
   bool dataLoaded = false;
-
   String _filterSelection = 'monthly'; // Default filter selection
 
   void _setFilter(String filter) {
@@ -53,55 +44,53 @@ class _AnalysisState extends State<Analysis> {
     final String endDateString =
         dateFormat.format(endDate.add(const Duration(days: 1)));
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    User? user = FirebaseAuth.instance.currentUser;
+    final String familyId = await UserDataService.getData();
 
-    if (user != null) {
-      QuerySnapshot dailySnapshot = await firestore
-          .collection('daily')
-          .where('user_id', isEqualTo: user.uid)
-          .where('date', isGreaterThanOrEqualTo: startDateString)
-          .where('date', isLessThan: endDateString)
-          .get();
-      dataExp.clear();
-      dataInc.clear();
-      for (QueryDocumentSnapshot dailyDoc in dailySnapshot.docs) {
-        String categoryId = dailyDoc['category_id'];
-        double amount = double.parse(dailyDoc['amount']);
+    QuerySnapshot dailySnapshot = await firestore
+        .collection('daily')
+        .where('family', isEqualTo: familyId)
+        .where('date', isGreaterThanOrEqualTo: startDateString)
+        .where('date', isLessThan: endDateString)
+        .get();
+    dataExp.clear();
+    dataInc.clear();
+    for (QueryDocumentSnapshot dailyDoc in dailySnapshot.docs) {
+      String categoryId = dailyDoc['category_id'];
+      double amount = double.parse(dailyDoc['amount']);
 
-        DocumentSnapshot categorySnapshot =
-            await firestore.collection('categories').doc(categoryId).get();
+      DocumentSnapshot categorySnapshot =
+          await firestore.collection('categories').doc(categoryId).get();
 
-        if (categorySnapshot.exists && categorySnapshot['type'] == 'expense') {
-          String categoryName = categorySnapshot['name'];
-          if (!dataExp.containsKey(categoryName)) {
-            dataExp[categoryName] = amount;
-          } else {
-            dataExp[categoryName] = dataExp[categoryName]! + amount;
-          }
-        }
-        if (categorySnapshot.exists && categorySnapshot['type'] == 'income') {
-          String categoryName = categorySnapshot['name'];
-          if (!dataInc.containsKey(categoryName)) {
-            dataInc[categoryName] = amount;
-          } else {
-            dataInc[categoryName] = dataInc[categoryName]! + amount;
-          }
-        }
-        if (categorySnapshot['type'] == 'income') {
-          inc += amount;
-        } else if (categorySnapshot['type'] == 'expense') {
-          exp += amount;
+      if (categorySnapshot.exists && categorySnapshot['type'] == 'expense') {
+        String categoryName = categorySnapshot['name'];
+        if (!dataExp.containsKey(categoryName)) {
+          dataExp[categoryName] = amount;
+        } else {
+          dataExp[categoryName] = dataExp[categoryName]! + amount;
         }
       }
-      total = inc - exp;
-      setState(() {
-        totalAmt = total;
-        totalExpenses = exp;
-        totalIncome = inc;
-        dataLoaded = true;
-      });
+      if (categorySnapshot.exists && categorySnapshot['type'] == 'income') {
+        String categoryName = categorySnapshot['name'];
+        if (!dataInc.containsKey(categoryName)) {
+          dataInc[categoryName] = amount;
+        } else {
+          dataInc[categoryName] = dataInc[categoryName]! + amount;
+        }
+      }
+      if (categorySnapshot['type'] == 'income') {
+        inc += amount;
+      } else if (categorySnapshot['type'] == 'expense') {
+        exp += amount;
+      }
     }
-  }
+    total = inc - exp;
+    setState(() {
+      totalAmt = total;
+      totalExpenses = exp;
+      totalIncome = inc;
+      dataLoaded = true;
+    });
+    }
 
   Future<void> getWeekly() async {
     double total = 0;
@@ -109,57 +98,56 @@ class _AnalysisState extends State<Analysis> {
     double inc = 0;
     DateTime selectedStartOfWeek =
         _selectedDate.subtract(Duration(days: _selectedDate.weekday - 1));
-    DateTime selectedEndOfWeek = selectedStartOfWeek.add(Duration(days: 6));
+    DateTime selectedEndOfWeek = selectedStartOfWeek.add(const Duration(days: 6));
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    User? user = FirebaseAuth.instance.currentUser;
+        final String familyId = await UserDataService.getData();
 
-    if (user != null) {
-      QuerySnapshot dailySnapshot = await firestore
-          .collection('daily')
-          .where('user_id', isEqualTo: user.uid)
-          .where('date', isGreaterThanOrEqualTo: selectedStartOfWeek.toString())
-          .where('date', isLessThanOrEqualTo: selectedEndOfWeek.toString())
-          .get();
-      dataExp.clear();
-      dataInc.clear();
-      for (QueryDocumentSnapshot dailyDoc in dailySnapshot.docs) {
-        String categoryId = dailyDoc['category_id'];
-        double amount = double.parse(dailyDoc['amount']);
 
-        DocumentSnapshot categorySnapshot =
-            await firestore.collection('categories').doc(categoryId).get();
+    QuerySnapshot dailySnapshot = await firestore
+        .collection('daily')
+        .where('family', isEqualTo: familyId)
+        .where('date', isGreaterThanOrEqualTo: selectedStartOfWeek.toString())
+        .where('date', isLessThanOrEqualTo: selectedEndOfWeek.toString())
+        .get();
+    dataExp.clear();
+    dataInc.clear();
+    for (QueryDocumentSnapshot dailyDoc in dailySnapshot.docs) {
+      String categoryId = dailyDoc['category_id'];
+      double amount = double.parse(dailyDoc['amount']);
 
-        if (categorySnapshot.exists && categorySnapshot['type'] == 'expense') {
-          String categoryName = categorySnapshot['name'];
-          if (!dataExp.containsKey(categoryName)) {
-            dataExp[categoryName] = amount;
-          } else {
-            dataExp[categoryName] = dataExp[categoryName]! + amount;
-          }
-        }
-        if (categorySnapshot.exists && categorySnapshot['type'] == 'income') {
-          String categoryName = categorySnapshot['name'];
-          if (!dataInc.containsKey(categoryName)) {
-            dataInc[categoryName] = amount;
-          } else {
-            dataInc[categoryName] = dataInc[categoryName]! + amount;
-          }
-        }
-        if (categorySnapshot['type'] == 'income') {
-          inc += amount;
-        } else if (categorySnapshot['type'] == 'expense') {
-          exp += amount;
+      DocumentSnapshot categorySnapshot =
+          await firestore.collection('categories').doc(categoryId).get();
+
+      if (categorySnapshot.exists && categorySnapshot['type'] == 'expense') {
+        String categoryName = categorySnapshot['name'];
+        if (!dataExp.containsKey(categoryName)) {
+          dataExp[categoryName] = amount;
+        } else {
+          dataExp[categoryName] = dataExp[categoryName]! + amount;
         }
       }
-      total = inc - exp;
-      setState(() {
-        totalAmt = total;
-        totalExpenses = exp;
-        totalIncome = inc;
-        dataLoaded = true;
-      });
+      if (categorySnapshot.exists && categorySnapshot['type'] == 'income') {
+        String categoryName = categorySnapshot['name'];
+        if (!dataInc.containsKey(categoryName)) {
+          dataInc[categoryName] = amount;
+        } else {
+          dataInc[categoryName] = dataInc[categoryName]! + amount;
+        }
+      }
+      if (categorySnapshot['type'] == 'income') {
+        inc += amount;
+      } else if (categorySnapshot['type'] == 'expense') {
+        exp += amount;
+      }
     }
-  }
+    total = inc - exp;
+    setState(() {
+      totalAmt = total;
+      totalExpenses = exp;
+      totalIncome = inc;
+      dataLoaded = true;
+    });
+    }
 
   Future<void> getDay() async {
     double total = 0;
@@ -168,53 +156,51 @@ class _AnalysisState extends State<Analysis> {
     final String selectedDateString =
         DateFormat('yyyy-MM-dd').format(_selectedDate);
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      QuerySnapshot dailySnapshot = await firestore
-          .collection('daily')
-          .where('user_id', isEqualTo: user.uid)
-          .where('date', isEqualTo: selectedDateString)
-          .get();
-      dataExp.clear();
-      dataInc.clear();
-      for (QueryDocumentSnapshot dailyDoc in dailySnapshot.docs) {
-        String categoryId = dailyDoc['category_id'];
-        double amount = double.parse(dailyDoc['amount']);
+    final String familyId = await UserDataService.getData();
+    QuerySnapshot dailySnapshot = await firestore
+        .collection('daily')
+        .where('family', isEqualTo: familyId)
+        .where('date', isEqualTo: selectedDateString)
+        .get();
+    dataExp.clear();
+    dataInc.clear();
+    for (QueryDocumentSnapshot dailyDoc in dailySnapshot.docs) {
+      String categoryId = dailyDoc['category_id'];
+      double amount = double.parse(dailyDoc['amount']);
 
-        DocumentSnapshot categorySnapshot =
-            await firestore.collection('categories').doc(categoryId).get();
+      DocumentSnapshot categorySnapshot =
+          await firestore.collection('categories').doc(categoryId).get();
 
-        if (categorySnapshot.exists && categorySnapshot['type'] == 'expense') {
-          String categoryName = categorySnapshot['name'];
-          if (!dataExp.containsKey(categoryName)) {
-            dataExp[categoryName] = amount;
-          } else {
-            dataExp[categoryName] = dataExp[categoryName]! + amount;
-          }
-        }
-        if (categorySnapshot.exists && categorySnapshot['type'] == 'income') {
-          String categoryName = categorySnapshot['name'];
-          if (!dataInc.containsKey(categoryName)) {
-            dataInc[categoryName] = amount;
-          } else {
-            dataInc[categoryName] = dataInc[categoryName]! + amount;
-          }
-        }
-        if (categorySnapshot['type'] == 'income') {
-          inc += amount;
-        } else if (categorySnapshot['type'] == 'expense') {
-          exp += amount;
+      if (categorySnapshot.exists && categorySnapshot['type'] == 'expense') {
+        String categoryName = categorySnapshot['name'];
+        if (!dataExp.containsKey(categoryName)) {
+          dataExp[categoryName] = amount;
+        } else {
+          dataExp[categoryName] = dataExp[categoryName]! + amount;
         }
       }
-      total = inc - exp;
-      setState(() {
-        totalAmt = total;
-        totalExpenses = exp;
-        totalIncome = inc;
-        dataLoaded = true;
-      });
+      if (categorySnapshot.exists && categorySnapshot['type'] == 'income') {
+        String categoryName = categorySnapshot['name'];
+        if (!dataInc.containsKey(categoryName)) {
+          dataInc[categoryName] = amount;
+        } else {
+          dataInc[categoryName] = dataInc[categoryName]! + amount;
+        }
+      }
+      if (categorySnapshot['type'] == 'income') {
+        inc += amount;
+      } else if (categorySnapshot['type'] == 'expense') {
+        exp += amount;
+      }
     }
-  }
+    total = inc - exp;
+    setState(() {
+      totalAmt = total;
+      totalExpenses = exp;
+      totalIncome = inc;
+      dataLoaded = true;
+    });
+    }
 
   late List<Widget> _pages;
 
@@ -266,7 +252,7 @@ class _AnalysisState extends State<Analysis> {
                         if (_filterSelection == 'daily') {
                           setState(() {
                             _selectedDate =
-                                _selectedDate.subtract(Duration(days: 1));
+                                _selectedDate.subtract(const Duration(days: 1));
                           });
                           // getDay();
                         } else {
@@ -299,7 +285,7 @@ class _AnalysisState extends State<Analysis> {
                         if (_filterSelection == 'daily') {
                           setState(() {
                             _selectedDate =
-                                _selectedDate.add(Duration(days: 1));
+                                _selectedDate.add(const Duration(days: 1));
                           });
                           // getDay();
                         } else {
@@ -436,7 +422,7 @@ class _AnalysisState extends State<Analysis> {
             height: 20,
           ),
           Container(
-            padding: EdgeInsets.all(10),
+            padding: const EdgeInsets.all(10),
             width: 300,
             child: DropdownButtonFormField(
               decoration: const InputDecoration(
@@ -472,7 +458,7 @@ class _AnalysisState extends State<Analysis> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => MyCalendar(),
+                        builder: (context) => const MyCalendar(),
                       ));
                 } else {
                   setState(() {
@@ -552,7 +538,7 @@ class FilterSheet extends StatelessWidget {
   final String currentFilter;
   final Function(String) onFilterSelected;
 
-  const FilterSheet({
+  const FilterSheet({super.key, 
     required this.currentFilter,
     required this.onFilterSelected,
   });

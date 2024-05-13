@@ -11,6 +11,7 @@ import 'package:math_expressions/math_expressions.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:spendify/dashboard_screen.dart';
+import 'package:spendify/service/userData.dart';
 
 class Calenders extends StatefulWidget {
   final String note = '';
@@ -106,8 +107,7 @@ class _CalendersState extends State<Calenders> {
       DateTime now = DateTime.now();
       DateTime firstDayOfMonth = DateTime(now.year, now.month, 1);
       DateTime lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
-      final user = FirebaseAuth.instance.currentUser;
-      final userId = user?.uid;
+      final String userId = await UserDataService.getData();
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection('daily')
           .where('user_id', isEqualTo: userId)
@@ -191,11 +191,10 @@ class _CalendersState extends State<Calenders> {
     String formattedDate = DateFormat('yyyy-MM-dd').format(_selectedDate);
     String formattedTime = '${_selectedTime.hour}:${_selectedTime.minute}';
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      final userId = user?.uid;
+      final String familyId = await UserDataService.getData();
       DocumentReference newDocumentRef =
           await _firestore.collection('daily').add({
-        'user_id': userId,
+        'family': familyId,
         'category_id': selectedCategory,
         'note': _noteController.text,
         'amount': result,

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:spendify/service/userData.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:intl/intl.dart';
 
@@ -41,11 +42,11 @@ class _MyCalendarState extends State<MyCalendar> {
         bool isLoading = true;
 
         // Start fetching data
-        _fetchData() async {
-          User? user = FirebaseAuth.instance.currentUser;
+        fetchData() async {
+          final String familyId = await UserDataService.getData();
           QuerySnapshot dailySnapshot = await FirebaseFirestore.instance
               .collection('daily')
-              .where('user_id', isEqualTo: user!.uid)
+              .where('family', isEqualTo: familyId)
               .where('date', isEqualTo: formattedDate)
               .get();
 
@@ -128,7 +129,7 @@ class _MyCalendarState extends State<MyCalendar> {
         }
 
         // Start fetching data when the dialog is built
-        _fetchData();
+        fetchData();
 
         return WillPopScope(
           onWillPop: () async => !isLoading,

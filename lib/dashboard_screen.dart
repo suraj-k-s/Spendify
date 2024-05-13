@@ -131,12 +131,23 @@ class _DashBoardState extends State<DashBoard> {
               },
             ),
              ListTile(
+              title: const Text("Invite Parent"),
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const Invitechild(type: 'PARENT',),
+                    ));
+                
+              },
+            ),
+            ListTile(
               title: const Text("Invite Child"),
               onTap: () {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const Invitechild(),
+                      builder: (context) => const Invitechild(type:'CHILD'),
                     ));
                 
               },

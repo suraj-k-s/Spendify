@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:spendify/service/userData.dart';
 
 class Goalview extends StatefulWidget {
   const Goalview({super.key});
@@ -10,27 +10,27 @@ class Goalview extends StatefulWidget {
 }
 
 class _GoalviewState extends State<Goalview> {
+  @override
   void initState() {
     super.initState();
     getGoal();
   }
 
-  List<Map<String, dynamic>> goalData = [];//empty list called goaldata is created
+  List<Map<String, dynamic>> goalData =
+      []; //empty list called goaldata is created
   Future<void> getGoal() async {
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      final userId = user?.uid;
+      final String familyId = await UserDataService.getData();
       List<Map<String, dynamic>> daily = [];
       QuerySnapshot<Map<String, dynamic>> totalSnapshot =
           await FirebaseFirestore.instance
               .collection('daily')
-              .where('user_id', isEqualTo: userId)
+              .where('family', isEqualTo: familyId)
               .get();
       for (QueryDocumentSnapshot<Map<String, dynamic>> documentSnapshot
           in totalSnapshot.docs) {
         Map<String, dynamic> data = documentSnapshot.data();
         data['id'] = documentSnapshot.id;
-        print("Document: $data");
         DocumentSnapshot<Map<String, dynamic>> catSnap = await FirebaseFirestore
             .instance
             .collection('categories')
@@ -38,14 +38,12 @@ class _GoalviewState extends State<Goalview> {
             .get();
         if (catSnap.exists) {
           Map<String, dynamic>? catdata = catSnap.data();
-          print('Category: $catdata');
           if (catdata != null) {
             data['category'] = catdata['name'];
             data['icon'] = catdata['icon'];
             data['type'] = catdata['type'];
           }
         }
-        print("Document: $data");
         if (data['type'] == 'goals') {
           daily.add(data);
         }
@@ -77,7 +75,7 @@ class _GoalviewState extends State<Goalview> {
                     ListTile(
                       leading: CircleAvatar(
                         backgroundColor: Colors.deepOrange[200],
-                        child:_buildIcon(iconName),
+                        child: _buildIcon(iconName),
                       ),
                       title: Text(
                         category,
@@ -88,24 +86,9 @@ class _GoalviewState extends State<Goalview> {
                   ],
                 );
               },
-            )
-            // ListView(
-            //       children: [
-            // ListTile(
-            //   leading: CircleAvatar(
-            //     backgroundColor: Colors.deepOrange[200],
-            //     child: Icon(Icons.cast_for_education),
-            //   ),
-            //   title: Text(
-            //     "Education",
-            //     style: TextStyle(fontWeight: FontWeight.bold),
-            //   ),
-            //   trailing: Text("+2000"),
-            // ),
-            //       ],
-            //     ),
-            ));
+            )));
   }
+
   Widget _buildIcon(int iconName) {
     return Text(
       String.fromCharCode(iconName),

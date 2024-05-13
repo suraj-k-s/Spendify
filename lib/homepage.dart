@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:spendify/Components/popupdaily.dart';
+import 'package:spendify/service/userData.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -26,21 +26,12 @@ class _HomePageState extends State<HomePage> {
     getDaily();
   }
 
-  void _changeMonth(int increment) {
-    setState(() {
-      _selectedDate =
-          DateTime(_selectedDate.year, _selectedDate.month + increment);
-    });
-    getDaily();
-  }
-
   Future<void> getDaily() async {
     try {
       double total = 0;
       double exp = 0;
       double inc = 0;
-      final user = FirebaseAuth.instance.currentUser;
-      final userId = user?.uid;
+      final String familyId = await UserDataService.getData();
       int year = _selectedDate.year.toInt();
       int month = _selectedDate.month.toInt();
       final startDate = DateTime(year, month, 1);
@@ -52,7 +43,7 @@ class _HomePageState extends State<HomePage> {
       QuerySnapshot<Map<String, dynamic>> totalSnapshot =
           await FirebaseFirestore.instance
               .collection('daily')
-              .where('user_id', isEqualTo: userId)
+              .where('family', isEqualTo: familyId)
               .where('date', isGreaterThanOrEqualTo: startDateString)
               .where('date', isLessThan: endDateString)
               .get();
@@ -101,19 +92,19 @@ class _HomePageState extends State<HomePage> {
       double total = 0;
       double exp = 0;
       double inc = 0;
-      final user = FirebaseAuth.instance.currentUser;
-      final userId = user?.uid;
+      final String familyId = await UserDataService.getData();
       List<Map<String, dynamic>> weekly = [];
 
       // Calculate the start and end dates of the selected week
       DateTime selectedStartOfWeek =
           _selectedDate.subtract(Duration(days: _selectedDate.weekday - 1));
-      DateTime selectedEndOfWeek = selectedStartOfWeek.add(Duration(days: 6));
+      DateTime selectedEndOfWeek =
+          selectedStartOfWeek.add(const Duration(days: 6));
 
       QuerySnapshot<Map<String, dynamic>> totalSnapshot =
           await FirebaseFirestore.instance
               .collection('daily')
-              .where('user_id', isEqualTo: userId)
+              .where('family', isEqualTo: familyId)
               .where('date',
                   isGreaterThanOrEqualTo: selectedStartOfWeek.toString())
               .where('date', isLessThanOrEqualTo: selectedEndOfWeek.toString())
@@ -164,19 +155,16 @@ class _HomePageState extends State<HomePage> {
       double total = 0;
       double exp = 0;
       double inc = 0;
-      final user = FirebaseAuth.instance.currentUser;
-      final userId = user?.uid;
+      final String familyId = await UserDataService.getData();
       List<Map<String, dynamic>> daily = [];
 
       // Format the selected date to match the date format in Firestore
       final String selectedDateString =
           DateFormat('yyyy-MM-dd').format(_selectedDate);
-
-      print("Date: $userId");
       QuerySnapshot<Map<String, dynamic>> totalSnapshot =
           await FirebaseFirestore.instance
               .collection('daily')
-              .where('user_id', isEqualTo: userId)
+              .where('family', isEqualTo: familyId)
               .where('date', isEqualTo: selectedDateString)
               .get();
 
@@ -261,8 +249,8 @@ class _HomePageState extends State<HomePage> {
                           onPressed: () {
                             if (_filterSelection == 'daily') {
                               setState(() {
-                                _selectedDate =
-                                    _selectedDate.subtract(Duration(days: 1));
+                                _selectedDate = _selectedDate
+                                    .subtract(const Duration(days: 1));
                               });
                               getDay();
                             } else {
@@ -295,7 +283,7 @@ class _HomePageState extends State<HomePage> {
                             if (_filterSelection == 'daily') {
                               setState(() {
                                 _selectedDate =
-                                    _selectedDate.add(Duration(days: 1));
+                                    _selectedDate.add(const Duration(days: 1));
                               });
                               getDay();
                             } else {
@@ -345,7 +333,8 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
                               Text(
-                                DateFormat.yMMMMd().format(_selectedDate.add(Duration(days: 7 - _selectedDate.weekday))),
+                                DateFormat.yMMMMd().format(_selectedDate.add(
+                                    Duration(days: 7 - _selectedDate.weekday))),
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: Colors.black,
@@ -445,7 +434,7 @@ class _HomePageState extends State<HomePage> {
                 height: 15,
               ),
               ListView.builder(
-                physics: NeverScrollableScrollPhysics(),
+                physics: const NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
                 itemCount: dailyData.length,
                 itemBuilder: (context, index) {
@@ -540,6 +529,7 @@ class FilterSheet extends StatelessWidget {
   final Function(String) onFilterSelected;
 
   const FilterSheet({
+    super.key,
     required this.currentFilter,
     required this.onFilterSelected,
   });

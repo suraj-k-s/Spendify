@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:spendify/service/userData.dart';
 
 class AddBudget extends StatefulWidget {
   final String docId;
@@ -33,13 +33,12 @@ class _AddBudgetState extends State<AddBudget> {
 
   Future<void> insertBudge() async {
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      final userId = user?.uid;
+      final String familyId = await UserDataService.getData();
       await FirebaseFirestore.instance.collection('budget').add(
         {
           'category_id': widget.docId,
           'budget': _limitController.text,
-          'user_id': userId,
+          'family': familyId,
         },
       );
       Fluttertoast.showToast(

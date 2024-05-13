@@ -4,7 +4,7 @@ import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:spendify/scanresult.dart';
 
 class QRScanner extends StatefulWidget {
-  const QRScanner({Key? key}) : super(key: key);
+  const QRScanner({super.key});
 
   @override
   State<QRScanner> createState() => _QRScannerState();
@@ -40,7 +40,6 @@ class _QRScannerState extends State<QRScanner> {
     });
     controller.scannedDataStream.listen((scanData) {
       // Handle scanned QR data here
-      print(scanData.code);
       String? data = scanData.code;
       Map<String, dynamic> jsonData = jsonDecode(data!);
       if (jsonData.containsKey('app') && jsonData['app'] == 'SPENDIFY') {

@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -13,7 +15,8 @@ import 'package:spendify/referalscannner.dart';
 
 class RegistrationScreen extends StatefulWidget {
   final String refId;
-  const RegistrationScreen({super.key, this.refId = ''});
+  final bool parent;
+  const RegistrationScreen({super.key, this.refId = '', this.parent=false});
 
   @override
   State<RegistrationScreen> createState() => _RegistrationScreenState();
@@ -70,8 +73,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         );
         if (widget.refId == '') {
           await _storeUserData(userCredential.user!.uid);
-        } else {
-          await _storeChildData(userCredential.user!.uid);
+        } else if(widget.parent) {
+          await _storeMemberData(userCredential.user!.uid, 'users');
+        }
+        else {
+          await _storeMemberData(userCredential.user!.uid, 'child');
         }
         Fluttertoast.showToast(
           msg: "Registration Successful",
@@ -105,10 +111,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     }
   }
 
-  Future<void> _storeChildData(String userId) async {
+  Future<void> _storeMemberData(String userId, String collection) async {
     try {
       final FirebaseFirestore firestore = FirebaseFirestore.instance;
-      await firestore.collection('child').doc(userId).set({
+      await firestore.collection(collection).doc(userId).set({
         'name': _nameController.text,
         'email': _emailController.text,
         'phone': _phoneController.text,
@@ -118,7 +124,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       });
 
       await _uploadImage(userId);
-      await _storeCategory(userId);
     } catch (e) {
       print("Error storing user data: $e");
     }
@@ -133,6 +138,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         'phone': _phoneController.text,
         'gender': _selectedGender,
         'password': _passController.text,
+        'family': userId,
       });
 
       await _uploadImage(userId);
@@ -179,7 +185,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           'type': category['type'],
         });
       }
-      print('Categories inserted successfully for user $userId');
     } catch (e) {
       print('Error inserting categories: $e');
     }
@@ -202,39 +207,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     return null;
   }
 
-  String? _validatePrefix(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Please select a prefix';
-    }
-    return null;
-  }
-
-  bool _validateGender() {
-    if (_selectedGender == null || _selectedGender!.isEmpty) {
-      setState(() {
-        genderCheck = false;
-      });
-      return false;
-    } else {
-      setState(() {
-        genderCheck = true;
-      });
-      return true;
-    }
-  }
-
   String? _validatePhoneNumber(String? value) {
     if (value == null || value.isEmpty) {
       return 'Please enter your phone number';
     }
 
-    return null;
-  }
-
-  String? _validateAddress(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter a valid address';
-    }
     return null;
   }
 
@@ -275,25 +252,27 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Registration',
+                        Text(
+                          widget.refId==''? 
+                          'Parent Registration':'Child Registration',
                           textAlign: TextAlign.left,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
                         const Text(
                             'Please make sure all the details are right.'),
-                        TextButton(
+                        if(widget.refId == '')
+                          TextButton(
                             onPressed: () {
                               Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => QRScanner(),
+                                    builder: (context) => const QRScanner(),
                                   ));
                             },
-                            child: Text('Click here if you have referal')),
+                            child: const Text('Click here if you have referal')),
                         Center(
                           child: GestureDetector(
                             onTap: _pickImage,
@@ -499,7 +478,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             children: [
                               Expanded(
                                 child: _loading
-                                    ? Center(
+                                    ? const Center(
                                         child: SizedBox(
                                           height: 30,
                                           width: 30,

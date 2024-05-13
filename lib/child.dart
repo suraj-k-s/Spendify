@@ -1,11 +1,11 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:spendify/service/userData.dart';
 
 class Invitechild extends StatefulWidget {
-  const Invitechild({super.key});
+  final String type;
+  const Invitechild({super.key, required this.type});
 
   @override
   State<Invitechild> createState() => _InvitechildState();
@@ -21,9 +21,8 @@ class _InvitechildState extends State<Invitechild> {
   }
 
   void _getUserUID() async {
-    final user = await FirebaseAuth.instance.currentUser;
-    final userId = user!.uid;
-    final data = {'id': userId, 'app': 'SPENDIFY'};
+    final String familyId = await UserDataService.getData();
+    final data = {'id': familyId, 'app': 'SPENDIFY', 'type': widget.type};
       setState(() {
         qrData = jsonEncode(data);
       });
