@@ -179,7 +179,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     try {
       for (var category in categoryData) {
         await categoriesCollection.add({
-          'userId': userId,
+          'family': userId,
           'name': category['name'],
           'icon': category['icon'].codePoint,
           'type': category['type'],

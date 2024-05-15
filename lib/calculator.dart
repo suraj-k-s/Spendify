@@ -2,7 +2,6 @@
 
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -107,10 +106,10 @@ class _CalendersState extends State<Calenders> {
       DateTime now = DateTime.now();
       DateTime firstDayOfMonth = DateTime(now.year, now.month, 1);
       DateTime lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
-      final String userId = await UserDataService.getData();
+      final String familyId = await UserDataService.getData();
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection('daily')
-          .where('user_id', isEqualTo: userId)
+          .where('family', isEqualTo: familyId)
           .where('category_id', isEqualTo: selectedCategory)
           .where('date', isGreaterThanOrEqualTo: firstDayOfMonth.toString())
           .where('date', isLessThanOrEqualTo: lastDayOfMonth.toString())
@@ -124,7 +123,7 @@ class _CalendersState extends State<Calenders> {
           await FirebaseFirestore.instance
               .collection('budget')
               .where('category_id', isEqualTo: selectedCategory)
-              .where('user_id', isEqualTo: userId)
+              .where('family', isEqualTo: familyId)
               .limit(1)
               .get();
       if (querySnapshot2.docs.isNotEmpty) {
@@ -137,7 +136,7 @@ class _CalendersState extends State<Calenders> {
       String formattedTime = '${_selectedTime.hour}:${_selectedTime.minute}';
       DocumentReference newDocumentRef =
           await _firestore.collection('daily').add({
-        'user_id': userId,
+        'family': familyId,
         'category_id': selectedCategory,
         'note': _noteController.text,
         'amount': result,
@@ -234,7 +233,6 @@ class _CalendersState extends State<Calenders> {
     setState(() {
       _isLoading = false;
     });
-    print("Navigating...");
     Navigator.pushReplacement(
         context,
         MaterialPageRoute(

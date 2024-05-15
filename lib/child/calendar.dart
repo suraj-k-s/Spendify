@@ -42,10 +42,10 @@ class _ChildCalendarState extends State<ChildCalendar> {
 
         // Start fetching data
         fetchData() async {
-          final String userId = await DataService.getData();
+          final String familyId = await DataService.getData();
           QuerySnapshot dailySnapshot = await FirebaseFirestore.instance
               .collection('daily')
-              .where('user_id', isEqualTo: userId)
+              .where('family', isEqualTo: familyId)
               .where('date', isEqualTo: formattedDate)
               .get();
 

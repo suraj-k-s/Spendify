@@ -6,6 +6,7 @@ import 'package:spendify/calendar.dart';
 import 'package:spendify/chart_expense.dart';
 import 'package:spendify/chart_income.dart';
 import 'package:spendify/service/parentdata.dart';
+import 'package:spendify/service/userData.dart';
 
 class ChildAnalysis extends StatefulWidget {
   const ChildAnalysis({super.key});
@@ -44,10 +45,10 @@ class _ChildAnalysisState extends State<ChildAnalysis> {
     final String endDateString =
         dateFormat.format(endDate.add(const Duration(days: 1)));
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    final String userId = await DataService.getData();
+    final String familyId = await DataService.getData();
     QuerySnapshot dailySnapshot = await firestore
         .collection('daily')
-        .where('user_id', isEqualTo: userId)
+        .where('user_id', isEqualTo: familyId)
         .where('date', isGreaterThanOrEqualTo: startDateString)
         .where('date', isLessThan: endDateString)
         .get();
@@ -99,10 +100,10 @@ class _ChildAnalysisState extends State<ChildAnalysis> {
           _selectedDate.subtract(Duration(days: _selectedDate.weekday - 1));
       DateTime selectedEndOfWeek = selectedStartOfWeek.add(Duration(days: 6));
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    final String userId = await DataService.getData();
+    final String familyId = await DataService.getData();
     QuerySnapshot dailySnapshot = await firestore
         .collection('daily')
-        .where('user_id', isEqualTo: userId)
+        .where('family', isEqualTo: familyId)
         .where('date',
                   isGreaterThanOrEqualTo: selectedStartOfWeek.toString())
               .where('date', isLessThanOrEqualTo: selectedEndOfWeek.toString())
@@ -154,10 +155,10 @@ Future<void> getDay() async {
     final String selectedDateString =
           DateFormat('yyyy-MM-dd').format(_selectedDate);
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    final String userId = await DataService.getData();
+    final String familyId = await UserDataService.getData();
     QuerySnapshot dailySnapshot = await firestore
         .collection('daily')
-        .where('user_id', isEqualTo: userId)
+        .where('family', isEqualTo: familyId)
         .where('date', isEqualTo: selectedDateString)
         .get();
     dataExp.clear();

@@ -103,10 +103,10 @@ class _ChildCalculatorState extends State<ChildCalculator> {
       DateTime now = DateTime.now();
       DateTime firstDayOfMonth = DateTime(now.year, now.month, 1);
       DateTime lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
-      final userId = await DataService.getData();
+      final familyId = await DataService.getData();
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection('daily')
-          .where('user_id', isEqualTo: userId)
+          .where('family', isEqualTo: familyId)
           .where('category_id', isEqualTo: selectedCategory)
           .where('date', isGreaterThanOrEqualTo: firstDayOfMonth.toString())
           .where('date', isLessThanOrEqualTo: lastDayOfMonth.toString())
@@ -120,7 +120,7 @@ class _ChildCalculatorState extends State<ChildCalculator> {
           await FirebaseFirestore.instance
               .collection('budget')
               .where('category_id', isEqualTo: selectedCategory)
-              .where('user_id', isEqualTo: userId)
+              .where('family', isEqualTo: familyId)
               .limit(1)
               .get();
       if (querySnapshot2.docs.isNotEmpty) {
@@ -133,7 +133,7 @@ class _ChildCalculatorState extends State<ChildCalculator> {
       String formattedTime = '${_selectedTime.hour}:${_selectedTime.minute}';
       DocumentReference newDocumentRef =
           await _firestore.collection('daily').add({
-        'user_id': userId,
+        'family': familyId,
         'category_id': selectedCategory,
         'note': _noteController.text,
         'amount': result,
@@ -190,7 +190,7 @@ class _ChildCalculatorState extends State<ChildCalculator> {
       final userId = await DataService.getData();
       DocumentReference newDocumentRef =
           await _firestore.collection('daily').add({
-        'user_id': userId,
+        'family': userId,
         'category_id': selectedCategory,
         'note': _noteController.text,
         'amount': result,

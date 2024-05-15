@@ -41,7 +41,7 @@ class _ChildHomePageState extends State<ChildHomePage> {
       double total = 0;
       double exp = 0;
       double inc = 0;
-      final String userId = await DataService.getData();
+      final String familyId = await DataService.getData();
       int year = _selectedDate.year.toInt();
       int month = _selectedDate.month.toInt();
       final startDate = DateTime(year, month, 1);
@@ -53,7 +53,7 @@ class _ChildHomePageState extends State<ChildHomePage> {
       QuerySnapshot<Map<String, dynamic>> totalSnapshot =
           await FirebaseFirestore.instance
               .collection('daily')
-              .where('user_id', isEqualTo: userId)
+              .where('family', isEqualTo: familyId)
               .where('date', isGreaterThanOrEqualTo: startDateString)
               .where('date', isLessThan: endDateString)
               .get();
@@ -102,7 +102,7 @@ class _ChildHomePageState extends State<ChildHomePage> {
       double total = 0;
       double exp = 0;
       double inc = 0;
-      final String userId = await DataService.getData();
+      final String familyId = await DataService.getData();
       DateTime selectedStartOfWeek =
           _selectedDate.subtract(Duration(days: _selectedDate.weekday - 1));
       DateTime selectedEndOfWeek = selectedStartOfWeek.add(Duration(days: 6));
@@ -110,7 +110,7 @@ class _ChildHomePageState extends State<ChildHomePage> {
       QuerySnapshot<Map<String, dynamic>> totalSnapshot =
           await FirebaseFirestore.instance
               .collection('daily')
-              .where('user_id', isEqualTo: userId)
+              .where('family', isEqualTo: familyId)
               .where('date',
                   isGreaterThanOrEqualTo: selectedStartOfWeek.toString())
               .where('date', isLessThanOrEqualTo: selectedEndOfWeek.toString())
@@ -160,14 +160,14 @@ class _ChildHomePageState extends State<ChildHomePage> {
       double total = 0;
       double exp = 0;
       double inc = 0;
-      final String userId = await DataService.getData();
+      final String familyId = await DataService.getData();
       final String selectedDateString =
           DateFormat('yyyy-MM-dd').format(_selectedDate);
       List<Map<String, dynamic>> daily = [];
       QuerySnapshot<Map<String, dynamic>> totalSnapshot =
           await FirebaseFirestore.instance
               .collection('daily')
-              .where('user_id', isEqualTo: userId)
+              .where('family', isEqualTo: familyId)
               .where('date', isEqualTo: selectedDateString)
               .get();
       for (QueryDocumentSnapshot<Map<String, dynamic>> documentSnapshot

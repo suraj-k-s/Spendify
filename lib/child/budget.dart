@@ -22,7 +22,7 @@ class _ChildBudgetState extends State<ChildBudget> {
   List<Map<String, dynamic>> budgetData = [];
 
   Future<void> getBudget() async {
-    final userId = await DataService.getData();
+    final familyId = await DataService.getData();
     DateTime now = DateTime.now();
     DateTime firstDayOfMonth = DateTime(now.year, now.month, 1);
     DateTime lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
@@ -34,7 +34,7 @@ class _ChildBudgetState extends State<ChildBudget> {
       QuerySnapshot<Map<String, dynamic>> budgetSnapshot =
           await FirebaseFirestore.instance
               .collection('budget')
-              .where('user_id', isEqualTo: userId)
+              .where('family', isEqualTo: familyId)
               .get();
       List<Map<String, dynamic>> data = [];
       for (QueryDocumentSnapshot<Map<String, dynamic>> budgetDocSnapshot
@@ -59,7 +59,7 @@ class _ChildBudgetState extends State<ChildBudget> {
         QuerySnapshot<Map<String, dynamic>> dailyDocsnap =
             await FirebaseFirestore.instance
                 .collection('daily')
-                .where('user_id', isEqualTo: userId)
+                .where('family', isEqualTo: familyId)
                 .where('date', isGreaterThanOrEqualTo: formattedFirstDayOfMonth)
                 .where('date', isLessThanOrEqualTo: formattedLastDayOfMonth)
                 .where('category_id', isEqualTo: catId)
