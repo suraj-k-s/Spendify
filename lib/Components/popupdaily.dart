@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously, avoid_print
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -110,7 +112,7 @@ class PopupDaily extends StatelessWidget {
                   padding: const EdgeInsets.all(10),
                   child: Row(
                     children: [
-                        _buildIcon(icon),
+                      _buildIcon(icon),
                       const SizedBox(width: 10),
                       Text(category),
                     ],
@@ -147,6 +149,7 @@ class PopupDaily extends StatelessWidget {
       ),
     );
   }
+
   Widget _buildIcon(int iconName) {
     return Text(
       String.fromCharCode(iconName),
@@ -167,14 +170,12 @@ class FullScreenImage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body: Container(
-        child: PhotoView(
-          imageProvider: NetworkImage(imageUrl),
-          minScale: PhotoViewComputedScale.contained,
-          maxScale: PhotoViewComputedScale.covered * 2.0,
-          backgroundDecoration: const BoxDecoration(
-            color: Colors.black,
-          ),
+      body: PhotoView(
+        imageProvider: NetworkImage(imageUrl),
+        minScale: PhotoViewComputedScale.contained,
+        maxScale: PhotoViewComputedScale.covered * 2.0,
+        backgroundDecoration: const BoxDecoration(
+          color: Colors.black,
         ),
       ),
     );

@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'dart:math';
-
 import 'package:spendify/Components/add_category.dart';
 import 'package:spendify/service/userData.dart';
 

@@ -46,4 +46,3 @@ List<IconData> iconsList = [
   Icons.local_shipping,
   Icons.local_car_wash,
 ];
-

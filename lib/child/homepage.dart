@@ -28,14 +28,6 @@ class _ChildHomePageState extends State<ChildHomePage> {
     getDaily();
   }
 
-  void _changeMonth(int increment) {
-    setState(() {
-      _selectedDate =
-          DateTime(_selectedDate.year, _selectedDate.month + increment);
-    });
-    getDaily();
-  }
-
   Future<void> getDaily() async {
     try {
       double total = 0;
@@ -105,7 +97,8 @@ class _ChildHomePageState extends State<ChildHomePage> {
       final String familyId = await ChildDataService.getData();
       DateTime selectedStartOfWeek =
           _selectedDate.subtract(Duration(days: _selectedDate.weekday - 1));
-      DateTime selectedEndOfWeek = selectedStartOfWeek.add(Duration(days: 6));
+      DateTime selectedEndOfWeek =
+          selectedStartOfWeek.add(const Duration(days: 6));
       List<Map<String, dynamic>> daily = [];
       QuerySnapshot<Map<String, dynamic>> totalSnapshot =
           await FirebaseFirestore.instance
@@ -251,8 +244,8 @@ class _ChildHomePageState extends State<ChildHomePage> {
                           onPressed: () {
                             if (_filterSelection == 'daily') {
                               setState(() {
-                                _selectedDate =
-                                    _selectedDate.subtract(Duration(days: 1));
+                                _selectedDate = _selectedDate
+                                    .subtract(const Duration(days: 1));
                               });
                               getDay();
                             } else {
@@ -285,7 +278,7 @@ class _ChildHomePageState extends State<ChildHomePage> {
                             if (_filterSelection == 'daily') {
                               setState(() {
                                 _selectedDate =
-                                    _selectedDate.add(Duration(days: 1));
+                                    _selectedDate.add(const Duration(days: 1));
                               });
                               getDay();
                             } else {
@@ -335,7 +328,8 @@ class _ChildHomePageState extends State<ChildHomePage> {
                                 ),
                               ),
                               Text(
-                                DateFormat.yMMMMd().format(_selectedDate.add(Duration(days: 7 - _selectedDate.weekday))),
+                                DateFormat.yMMMMd().format(_selectedDate.add(
+                                    Duration(days: 7 - _selectedDate.weekday))),
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: Colors.black,
@@ -530,6 +524,7 @@ class FilterSheet extends StatelessWidget {
   final Function(String) onFilterSelected;
 
   const FilterSheet({
+    super.key,
     required this.currentFilter,
     required this.onFilterSelected,
   });

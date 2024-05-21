@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, avoid_print
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -16,7 +16,7 @@ import 'package:spendify/referalscannner.dart';
 class RegistrationScreen extends StatefulWidget {
   final String refId;
   final bool parent;
-  const RegistrationScreen({super.key, this.refId = '', this.parent=false});
+  const RegistrationScreen({super.key, this.refId = '', this.parent = false});
 
   @override
   State<RegistrationScreen> createState() => _RegistrationScreenState();
@@ -73,10 +73,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         );
         if (widget.refId == '') {
           await _storeUserData(userCredential.user!.uid);
-        } else if(widget.parent) {
+        } else if (widget.parent) {
           await _storeMemberData(userCredential.user!.uid, 'users');
-        }
-        else {
+        } else {
           await _storeMemberData(userCredential.user!.uid, 'child');
         }
         Fluttertoast.showToast(
@@ -253,8 +252,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          widget.refId==''? 
-                          'Parent Registration':'Child Registration',
+                          widget.refId == ''
+                              ? 'Parent Registration'
+                              : 'Child Registration',
                           textAlign: TextAlign.left,
                           style: const TextStyle(
                             fontSize: 28,
@@ -263,16 +263,17 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                         const Text(
                             'Please make sure all the details are right.'),
-                        if(widget.refId == '')
+                        if (widget.refId == '')
                           TextButton(
-                            onPressed: () {
-                              Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const QRScanner(),
-                                  ));
-                            },
-                            child: const Text('Click here if you have referal')),
+                              onPressed: () {
+                                Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const QRScanner(),
+                                    ));
+                              },
+                              child:
+                                  const Text('Click here if you have referal')),
                         Center(
                           child: GestureDetector(
                             onTap: _pickImage,

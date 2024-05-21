@@ -1,10 +1,12 @@
+// ignore_for_file: avoid_print
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:spendify/registration_screen.dart';
 
 class QRResult extends StatefulWidget {
   final Map<String, dynamic> qrData;
-  const QRResult({Key? key, required this.qrData}) : super(key: key);
+  const QRResult({super.key, required this.qrData});
 
   @override
   State<QRResult> createState() => _QRResultState();
@@ -69,7 +71,13 @@ class _QRResultState extends State<QRResult> {
                   Text('Parent Name: $userName'),
                   ElevatedButton(
                     onPressed: () {
-                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => RegistrationScreen(refId: userId,),));
+                      Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => RegistrationScreen(
+                              refId: userId,
+                            ),
+                          ));
                     },
                     child: const Text('Register as Child'),
                   ),

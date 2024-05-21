@@ -133,32 +133,32 @@ const List<Map<String, dynamic>> categoryData = [
   //Goals
   {
     'name': 'Education',
-     'icon':Icons.cast_for_education,
+    'icon': Icons.cast_for_education,
     'type': 'goals',
   },
   {
     'name': 'Vaccation',
-    'icon':Icons.beach_access,
+    'icon': Icons.beach_access,
     'type': 'goals',
   },
   {
     'name': 'Emergency',
-    'icon':Icons.local_hospital,
+    'icon': Icons.local_hospital,
     'type': 'goals',
   },
   {
     'name': 'Medical Funds',
-    'icon':Icons.medical_services,
+    'icon': Icons.medical_services,
     'type': 'golas',
   },
   {
     'name': 'Debt Payment',
-    'icon':Icons.money,
+    'icon': Icons.money,
     'type': 'goals',
   },
   {
     'name': 'Buying Utensils',
-    'icon':Icons.car_rental,
+    'icon': Icons.car_rental,
     'type': 'goals',
   },
 ];

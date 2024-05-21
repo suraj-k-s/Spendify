@@ -23,20 +23,20 @@ class _InvitechildState extends State<Invitechild> {
   void _getUserUID() async {
     final String familyId = await UserDataService.getData();
     final data = {'id': familyId, 'app': 'SPENDIFY', 'type': widget.type};
-      setState(() {
-        qrData = jsonEncode(data);
-      });
-    }
+    setState(() {
+      qrData = jsonEncode(data);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('QR Code'),
+        title: const Text('QR Code'),
       ),
       body: Center(
         child: qrData.isEmpty
-            ? CircularProgressIndicator()
+            ? const CircularProgressIndicator()
             : QrImageView(
                 data: qrData,
                 version: QrVersions.auto,

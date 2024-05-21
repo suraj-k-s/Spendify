@@ -425,6 +425,7 @@ class _ChildCalculatorState extends State<ChildCalculator> {
                             builder: (context) => CategoryBottomSheet(
                               onCategorySelected: _handleSelectedCategory,
                               type: _type,
+                              child: true,
                             ),
                           );
                         },

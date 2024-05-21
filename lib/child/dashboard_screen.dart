@@ -80,7 +80,9 @@ class _ChildDashBoardState extends State<ChildDashBoard> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const ViewProfile(who: 'child',),
+                      builder: (context) => const ViewProfile(
+                        who: 'child',
+                      ),
                     ));
               },
             ),

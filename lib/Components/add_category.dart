@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously, avoid_print
+
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -42,12 +44,12 @@ class _CategoryDialogState extends State<CategoryDialog> {
       final userId = user?.uid;
       String categoryName = _textEditingController.text;
       int? iconCodePoint = _selectedIcon?.codePoint;
-        _firestore.collection('categories').add({
-          'type': _type,
-          'icon': iconCodePoint,
-          'name': categoryName,
-          'userId': userId
-        });
+      _firestore.collection('categories').add({
+        'type': _type,
+        'icon': iconCodePoint,
+        'name': categoryName,
+        'userId': userId
+      });
       Navigator.of(context).pop();
     } catch (e) {
       print("Error inserting: $e");
@@ -77,10 +79,11 @@ class _CategoryDialogState extends State<CategoryDialog> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
-            children: [Text(
-                    'Type:',
-                    style: TextStyle(fontSize: 16),
-                  ),
+            children: [
+              const Text(
+                'Type:',
+                style: TextStyle(fontSize: 16),
+              ),
               Row(
                 children: [
                   GestureDetector(
@@ -200,7 +203,8 @@ class _CategoryDialogState extends State<CategoryDialog> {
                     final random = Random();
                     final randomColor = Color.fromARGB(
                       255,
-                      (random.nextInt(64) + 192), // Red value between 192 and 255
+                      (random.nextInt(64) +
+                          192), // Red value between 192 and 255
                       (random.nextInt(64) +
                           192), // Green value between 192 and 255
                       (random.nextInt(64) +
@@ -234,18 +238,15 @@ class _CategoryDialogState extends State<CategoryDialog> {
         actions: <Widget>[
           TextButton(
             onPressed: () {
-              print("icon: $_selectedIcon");
-      
               Navigator.of(context).pop(); // Close the dialog
             },
             child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
-              if(widget.id == ""){
+              if (widget.id == "") {
                 addcategory();
-              }
-              else{
+              } else {
                 editCategory();
               }
             },

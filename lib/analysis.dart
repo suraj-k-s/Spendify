@@ -90,7 +90,7 @@ class _AnalysisState extends State<Analysis> {
       totalIncome = inc;
       dataLoaded = true;
     });
-    }
+  }
 
   Future<void> getWeekly() async {
     double total = 0;
@@ -98,10 +98,10 @@ class _AnalysisState extends State<Analysis> {
     double inc = 0;
     DateTime selectedStartOfWeek =
         _selectedDate.subtract(Duration(days: _selectedDate.weekday - 1));
-    DateTime selectedEndOfWeek = selectedStartOfWeek.add(const Duration(days: 6));
+    DateTime selectedEndOfWeek =
+        selectedStartOfWeek.add(const Duration(days: 6));
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-        final String familyId = await UserDataService.getData();
-
+    final String familyId = await UserDataService.getData();
 
     QuerySnapshot dailySnapshot = await firestore
         .collection('daily')
@@ -147,7 +147,7 @@ class _AnalysisState extends State<Analysis> {
       totalIncome = inc;
       dataLoaded = true;
     });
-    }
+  }
 
   Future<void> getDay() async {
     double total = 0;
@@ -200,7 +200,7 @@ class _AnalysisState extends State<Analysis> {
       totalIncome = inc;
       dataLoaded = true;
     });
-    }
+  }
 
   late List<Widget> _pages;
 
@@ -241,8 +241,7 @@ class _AnalysisState extends State<Analysis> {
         children: [
           Stack(
             children: [
-              if (_filterSelection !=
-                  'weekly') // Display monthly or daily view
+              if (_filterSelection != 'weekly') // Display monthly or daily view
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.max,
@@ -538,7 +537,8 @@ class FilterSheet extends StatelessWidget {
   final String currentFilter;
   final Function(String) onFilterSelected;
 
-  const FilterSheet({super.key, 
+  const FilterSheet({
+    super.key,
     required this.currentFilter,
     required this.onFilterSelected,
   });

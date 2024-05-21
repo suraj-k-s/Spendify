@@ -34,43 +34,41 @@ class _ChartState extends State<ChartI> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Column(
-        children: [
-          if (dataLoaded)
-            dataMap.isNotEmpty
-                ? PieChart(
-                    dataMap: dataMap,
-                    animationDuration: const Duration(milliseconds: 800),
-                    chartLegendSpacing: 32,
-                    chartRadius: MediaQuery.of(context).size.width != 0
-                        ? MediaQuery.of(context).size.width / 3.2
-                        : 0,
-                    colorList: colorList,
-                    initialAngleInDegree: 0,
-                    chartType: ChartType.ring,
-                    ringStrokeWidth: 32,
-                    centerText: "Expense",
-                    legendOptions: const LegendOptions(
-                      showLegendsInRow: false,
-                      legendPosition: LegendPosition.right,
-                      showLegends: true,
-                      legendShape: BoxShape.circle,
-                      legendTextStyle: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
+    return Column(
+      children: [
+        if (dataLoaded)
+          dataMap.isNotEmpty
+              ? PieChart(
+                  dataMap: dataMap,
+                  animationDuration: const Duration(milliseconds: 800),
+                  chartLegendSpacing: 32,
+                  chartRadius: MediaQuery.of(context).size.width != 0
+                      ? MediaQuery.of(context).size.width / 3.2
+                      : 0,
+                  colorList: colorList,
+                  initialAngleInDegree: 0,
+                  chartType: ChartType.ring,
+                  ringStrokeWidth: 32,
+                  centerText: "Income",
+                  legendOptions: const LegendOptions(
+                    showLegendsInRow: false,
+                    legendPosition: LegendPosition.right,
+                    showLegends: true,
+                    legendShape: BoxShape.circle,
+                    legendTextStyle: TextStyle(
+                      fontWeight: FontWeight.bold,
                     ),
-                    chartValuesOptions: const ChartValuesOptions(
-                      showChartValueBackground: true,
-                      showChartValues: true,
-                      showChartValuesInPercentage: false,
-                      showChartValuesOutside: false,
-                      decimalPlaces: 1,
-                    ),
-                  )
-                : const Text('No data found'),
-        ],
-      ),
+                  ),
+                  chartValuesOptions: const ChartValuesOptions(
+                    showChartValueBackground: true,
+                    showChartValues: true,
+                    showChartValuesInPercentage: false,
+                    showChartValuesOutside: false,
+                    decimalPlaces: 1,
+                  ),
+                )
+              : const Text('No data found'),
+      ],
     );
   }
 }

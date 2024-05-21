@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -68,7 +70,8 @@ class _LoginScreenState extends State<LoginScreen> {
         _loading = true;
       });
       try {
-        final UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        final UserCredential userCredential =
+            await _auth.signInWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passController.text.trim(),
         );
@@ -78,9 +81,16 @@ class _LoginScreenState extends State<LoginScreen> {
           prefs.setBool('keepLoggedIn', _isChecked);
           bool isUser = await isUserInUsersCollection(userId);
           if (isUser) {
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const DashBoard(),));
+            Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const DashBoard(),
+                ));
           } else {
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const ChildDashBoard()));
+            Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const ChildDashBoard()));
           }
         }
       } catch (e) {

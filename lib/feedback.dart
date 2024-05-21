@@ -53,7 +53,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
     return Scaffold(
       appBar: AppBar(),
       body: SafeArea(
-        child: Form( // Wrap your form with Form widget
+        child: Form(
+          // Wrap your form with Form widget
           key: _formKey, // Assign the key
           child: Column(
             children: [
@@ -99,4 +100,3 @@ class _FeedbackPageState extends State<FeedbackPage> {
     );
   }
 }
-

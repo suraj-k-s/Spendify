@@ -2,9 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pie_chart/pie_chart.dart';
-import 'package:spendify/calendar.dart';
 import 'package:spendify/chart_expense.dart';
 import 'package:spendify/chart_income.dart';
+import 'package:spendify/child/calendar.dart';
 import 'package:spendify/service/childData.dart';
 
 class ChildAnalysis extends StatefulWidget {
@@ -22,13 +22,6 @@ class _ChildAnalysisState extends State<ChildAnalysis> {
   double totalExpenses = 0.0;
   double totalIncome = 0.0;
   final DateFormat dateFormat = DateFormat('yyyy-MM-dd');
-  void _changeMonth(int increment) {
-    setState(() {
-      _selectedDate =
-          DateTime(_selectedDate.year, _selectedDate.month + increment);
-    });
-    getDaily();
-  }
 
   bool dataLoaded = false;
 
@@ -47,7 +40,7 @@ class _ChildAnalysisState extends State<ChildAnalysis> {
     final String familyId = await ChildDataService.getData();
     QuerySnapshot dailySnapshot = await firestore
         .collection('daily')
-        .where('user_id', isEqualTo: familyId)
+        .where('family', isEqualTo: familyId)
         .where('date', isGreaterThanOrEqualTo: startDateString)
         .where('date', isLessThan: endDateString)
         .get();
@@ -96,16 +89,16 @@ class _ChildAnalysisState extends State<ChildAnalysis> {
     double exp = 0;
     double inc = 0;
     DateTime selectedStartOfWeek =
-          _selectedDate.subtract(Duration(days: _selectedDate.weekday - 1));
-      DateTime selectedEndOfWeek = selectedStartOfWeek.add(Duration(days: 6));
+        _selectedDate.subtract(Duration(days: _selectedDate.weekday - 1));
+    DateTime selectedEndOfWeek =
+        selectedStartOfWeek.add(const Duration(days: 6));
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     final String familyId = await ChildDataService.getData();
     QuerySnapshot dailySnapshot = await firestore
         .collection('daily')
         .where('family', isEqualTo: familyId)
-        .where('date',
-                  isGreaterThanOrEqualTo: selectedStartOfWeek.toString())
-              .where('date', isLessThanOrEqualTo: selectedEndOfWeek.toString())
+        .where('date', isGreaterThanOrEqualTo: selectedStartOfWeek.toString())
+        .where('date', isLessThanOrEqualTo: selectedEndOfWeek.toString())
         .get();
     dataExp.clear();
     dataInc.clear();
@@ -147,12 +140,12 @@ class _ChildAnalysisState extends State<ChildAnalysis> {
     });
   }
 
-Future<void> getDay() async {
+  Future<void> getDay() async {
     double total = 0;
     double exp = 0;
     double inc = 0;
     final String selectedDateString =
-          DateFormat('yyyy-MM-dd').format(_selectedDate);
+        DateFormat('yyyy-MM-dd').format(_selectedDate);
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     final String familyId = await ChildDataService.getData();
     QuerySnapshot dailySnapshot = await firestore
@@ -222,7 +215,7 @@ Future<void> getDay() async {
     getDaily();
   }
 
-   String _filterSelection = 'monthly'; // Default filter selection
+  String _filterSelection = 'monthly'; // Default filter selection
 
   void _setFilter(String filter) {
     setState(() {
@@ -242,151 +235,152 @@ Future<void> getDay() async {
         child: Column(
           children: [
             Stack(
-                children: [
-                  if (_filterSelection !=
-                      'weekly') // Display monthly or daily view
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        IconButton(
-                          onPressed: () {
-                            if (_filterSelection == 'daily') {
-                              setState(() {
-                                _selectedDate =
-                                    _selectedDate.subtract(Duration(days: 1));
-                              });
-                              getDay();
-                            } else {
-                              setState(() {
-                                _selectedDate = DateTime(_selectedDate.year,
-                                    _selectedDate.month - 1);
-                              });
-                              getDaily();
-                            }
-                          },
-                          icon: const Icon(
-                            Icons.chevron_left,
-                            color: Color.fromARGB(255, 48, 2, 35),
-                          ),
-                        ),
-                        const SizedBox(width: 5),
-                        Text(
-                          _filterSelection == 'daily'
-                              ? DateFormat.yMMMMd().format(_selectedDate)
-                              : DateFormat.yMMMM().format(_selectedDate),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                            fontSize: 24,
-                          ),
-                        ),
-                        const SizedBox(width: 5),
-                        IconButton(
-                          onPressed: () {
-                            if (_filterSelection == 'daily') {
-                              setState(() {
-                                _selectedDate =
-                                    _selectedDate.add(Duration(days: 1));
-                              });
-                              getDay();
-                            } else {
-                              setState(() {
-                                _selectedDate = DateTime(_selectedDate.year,
-                                    _selectedDate.month + 1);
-                              });
-                              getDaily();
-                            }
-                          },
-                          icon: const Icon(
-                            Icons.chevron_right,
-                            color: Color.fromARGB(255, 48, 2, 35),
-                          ),
-                        ),
-                      ],
-                    ),
-                  if (_filterSelection == 'weekly') // Display weekly view
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _selectedDate = _selectedDate
-                                  .subtract(const Duration(days: 7));
-                            });
-                            getWeekly();
-                          },
-                          icon: const Icon(
-                            Icons.chevron_left,
-                            color: Color.fromARGB(255, 48, 2, 35),
-                          ),
-                        ),
-                        const SizedBox(width: 5),
-                        Flexible(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '${DateFormat.yMMMMd().format(_selectedDate.subtract(Duration(days: _selectedDate.weekday - 1)))} - ',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
-                                  fontSize: 24,
-                                ),
-                              ),
-                              Text(
-                                DateFormat.yMMMMd().format(_selectedDate.add(Duration(days: 7 - _selectedDate.weekday))),
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
-                                  fontSize: 24,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 5),
-                        IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _selectedDate =
-                                  _selectedDate.add(const Duration(days: 7));
-                            });
-                            getWeekly();
-                          },
-                          icon: const Icon(
-                            Icons.chevron_right,
-                            color: Color.fromARGB(255, 48, 2, 35),
-                          ),
-                        ),
-                      ],
-                    ),
+              children: [
+                if (_filterSelection !=
+                    'weekly') // Display monthly or daily view
                   Row(
-                    // Filter button
-                    mainAxisAlignment: MainAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.max,
                     children: [
                       IconButton(
                         onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) => FilterSheet(
-                              currentFilter: _filterSelection,
-                              onFilterSelected: _setFilter,
-                            ),
-                          );
+                          if (_filterSelection == 'daily') {
+                            setState(() {
+                              _selectedDate = _selectedDate
+                                  .subtract(const Duration(days: 1));
+                            });
+                            getDay();
+                          } else {
+                            setState(() {
+                              _selectedDate = DateTime(
+                                  _selectedDate.year, _selectedDate.month - 1);
+                            });
+                            getDaily();
+                          }
                         },
                         icon: const Icon(
-                          Icons.filter_list,
+                          Icons.chevron_left,
+                          color: Color.fromARGB(255, 48, 2, 35),
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        _filterSelection == 'daily'
+                            ? DateFormat.yMMMMd().format(_selectedDate)
+                            : DateFormat.yMMMM().format(_selectedDate),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                          fontSize: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      IconButton(
+                        onPressed: () {
+                          if (_filterSelection == 'daily') {
+                            setState(() {
+                              _selectedDate =
+                                  _selectedDate.add(const Duration(days: 1));
+                            });
+                            getDay();
+                          } else {
+                            setState(() {
+                              _selectedDate = DateTime(
+                                  _selectedDate.year, _selectedDate.month + 1);
+                            });
+                            getDaily();
+                          }
+                        },
+                        icon: const Icon(
+                          Icons.chevron_right,
                           color: Color.fromARGB(255, 48, 2, 35),
                         ),
                       ),
                     ],
                   ),
-                ],
-              ),
+                if (_filterSelection == 'weekly') // Display weekly view
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _selectedDate =
+                                _selectedDate.subtract(const Duration(days: 7));
+                          });
+                          getWeekly();
+                        },
+                        icon: const Icon(
+                          Icons.chevron_left,
+                          color: Color.fromARGB(255, 48, 2, 35),
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      Flexible(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              '${DateFormat.yMMMMd().format(_selectedDate.subtract(Duration(days: _selectedDate.weekday - 1)))} - ',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                                fontSize: 24,
+                              ),
+                            ),
+                            Text(
+                              DateFormat.yMMMMd().format(_selectedDate.add(
+                                  Duration(days: 7 - _selectedDate.weekday))),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                                fontSize: 24,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _selectedDate =
+                                _selectedDate.add(const Duration(days: 7));
+                          });
+                          getWeekly();
+                        },
+                        icon: const Icon(
+                          Icons.chevron_right,
+                          color: Color.fromARGB(255, 48, 2, 35),
+                        ),
+                      ),
+                    ],
+                  ),
+                Row(
+                  // Filter button
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => FilterSheet(
+                            currentFilter: _filterSelection,
+                            onFilterSelected: _setFilter,
+                          ),
+                        );
+                      },
+                      icon: const Icon(
+                        Icons.filter_list,
+                        color: Color.fromARGB(255, 48, 2, 35),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -472,7 +466,7 @@ Future<void> getDay() async {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const MyCalendar(),
+                          builder: (context) => const ChildCalendar(),
                         ));
                   } else {
                     setState(() {
@@ -554,6 +548,7 @@ class FilterSheet extends StatelessWidget {
   final Function(String) onFilterSelected;
 
   const FilterSheet({
+    super.key,
     required this.currentFilter,
     required this.onFilterSelected,
   });

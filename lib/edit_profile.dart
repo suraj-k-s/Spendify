@@ -1,6 +1,7 @@
+// ignore_for_file: use_build_context_synchronously, avoid_print
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:spendify/Components/appbar.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -25,7 +26,6 @@ class _EditProfileState extends State<EditProfile> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController dobController = TextEditingController();
   XFile? _selectedImage;
-  DateTime? _selectedDate;
 
   @override
   void initState() {
@@ -133,27 +133,6 @@ class _EditProfileState extends State<EditProfile> {
     }
   }
 
-  void _selectDate() async {
-    final DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate ?? DateTime.now(),
-      firstDate: DateTime(2000, 1, 1),
-      lastDate: DateTime(2050, 12, 31),
-    );
-    if (pickedDate != null) {
-      setState(() {
-        _selectedDate = pickedDate;
-        dobController.text = DateFormat('dd-MM-yyyy').format(pickedDate);
-        dob = DateFormat('dd-MM-yyyy').format(pickedDate);
-        // Reset name when date is selected
-        // Reset profile image when date is selected
-        _selectedImage = null;
-      });
-    }
-  }
-
-  
-
   bool check = false;
   @override
   Widget build(BuildContext context) {
@@ -246,7 +225,6 @@ class _EditProfileState extends State<EditProfile> {
                       },
                     ),
                   ),
-                  
                   const SizedBox(height: 20.0),
                   const Padding(
                     padding: EdgeInsets.all(8.0),
@@ -272,7 +250,6 @@ class _EditProfileState extends State<EditProfile> {
                     },
                     child: const Text('Update'),
                   ),
-                  
                 ],
               ),
             ),

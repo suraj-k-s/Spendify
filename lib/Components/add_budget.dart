@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously, avoid_print
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -12,7 +14,7 @@ class AddBudget extends StatefulWidget {
 
   const AddBudget(
       {super.key,
-      required this.docId,  
+      required this.docId,
       required this.icon,
       required this.category,
       this.id = '',
@@ -23,12 +25,12 @@ class AddBudget extends StatefulWidget {
 }
 
 class _AddBudgetState extends State<AddBudget> {
-
   @override
-  void initState(){
+  void initState() {
     super.initState();
     _limitController.text = widget.amt;
   }
+
   final TextEditingController _limitController = TextEditingController();
 
   Future<void> insertBudge() async {
@@ -63,7 +65,10 @@ class _AddBudgetState extends State<AddBudget> {
 
   Future<void> editBudget() async {
     try {
-      await FirebaseFirestore.instance.collection('budget').doc(widget.id).update(
+      await FirebaseFirestore.instance
+          .collection('budget')
+          .doc(widget.id)
+          .update(
         {
           'budget': _limitController.text,
         },
@@ -102,12 +107,12 @@ class _AddBudgetState extends State<AddBudget> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _buildIcon(widget.icon),
-                  SizedBox(
+                  const SizedBox(
                     width: 5,
                   ),
                   Text(
                     widget.category,
-                    style: TextStyle(fontSize: 18),
+                    style: const TextStyle(fontSize: 18),
                   )
                 ],
               ),
@@ -143,10 +148,9 @@ class _AddBudgetState extends State<AddBudget> {
         ),
         TextButton(
           onPressed: () {
-            if(widget.id == ''){
+            if (widget.id == '') {
               insertBudge();
-            }
-            else{
+            } else {
               editBudget();
             }
           },
@@ -155,6 +159,7 @@ class _AddBudgetState extends State<AddBudget> {
       ],
     );
   }
+
   Widget _buildIcon(int iconName) {
     return Text(
       String.fromCharCode(iconName),

@@ -85,7 +85,9 @@ class _DashBoardState extends State<DashBoard> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const ViewProfile(who: "users",),
+                      builder: (context) => const ViewProfile(
+                        who: "users",
+                      ),
                     ));
               },
             ),
@@ -127,18 +129,18 @@ class _DashBoardState extends State<DashBoard> {
                     MaterialPageRoute(
                       builder: (context) => const Blog(),
                     ));
-                
               },
             ),
-             ListTile(
+            ListTile(
               title: const Text("Invite Parent"),
               onTap: () {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const Invitechild(type: 'PARENT',),
+                      builder: (context) => const Invitechild(
+                        type: 'PARENT',
+                      ),
                     ));
-                
               },
             ),
             ListTile(
@@ -147,9 +149,8 @@ class _DashBoardState extends State<DashBoard> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const Invitechild(type:'CHILD'),
+                      builder: (context) => const Invitechild(type: 'CHILD'),
                     ));
-                
               },
             ),
             ListTile(

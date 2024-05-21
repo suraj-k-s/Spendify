@@ -39,8 +39,7 @@ class _ViewProfileState extends State<ViewProfile> {
     }
     userDocs.clear();
     if (querySnapshot.exists) {
-      
-        id = querySnapshot.id;
+      id = querySnapshot.id;
       Map<String, dynamic> documentData =
           querySnapshot.data() as Map<String, dynamic>;
 
@@ -71,7 +70,7 @@ class _ViewProfileState extends State<ViewProfile> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Image.asset(
-                    'assets/Logo.png', 
+                    'assets/Logo.png',
                     height: 150,
                   ),
                   const SizedBox(height: 40),
@@ -128,7 +127,10 @@ class _ViewProfileState extends State<ViewProfile> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => EditProfile(userId: id, who: widget.who,)));
+                                builder: (context) => EditProfile(
+                                      userId: id,
+                                      who: widget.who,
+                                    )));
                       },
                       child: const Text('Edit'),
                     ),

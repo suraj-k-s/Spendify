@@ -8,19 +8,18 @@ class Popupblog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-          title: Text(question),
-          content: SingleChildScrollView(
-            child: Text(answer),
-          ),
-          actions: <Widget>[
-           ElevatedButton.icon(onPressed: (){
-            Navigator.pop(context);
-           }, icon: Icon(Icons.close), label: Text("Close"))
-          ],
-        );
+      title: Text(question),
+      content: SingleChildScrollView(
+        child: Text(answer),
+      ),
+      actions: <Widget>[
+        ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: const Icon(Icons.close),
+            label: const Text("Close"))
+      ],
+    );
   }
 }
-    
-    
-    
-  
