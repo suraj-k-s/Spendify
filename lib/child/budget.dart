@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:spendify/budgetlimit.dart';
-import 'package:spendify/service/parentdata.dart';
+import 'package:spendify/service/childData.dart';
 
 class ChildBudget extends StatefulWidget {
   const ChildBudget({super.key});
@@ -22,7 +22,7 @@ class _ChildBudgetState extends State<ChildBudget> {
   List<Map<String, dynamic>> budgetData = [];
 
   Future<void> getBudget() async {
-    final familyId = await DataService.getData();
+    final familyId = await ChildDataService.getData();
     DateTime now = DateTime.now();
     DateTime firstDayOfMonth = DateTime(now.year, now.month, 1);
     DateTime lastDayOfMonth = DateTime(now.year, now.month + 1, 0);

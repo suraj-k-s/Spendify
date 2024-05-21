@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:spendify/Components/popupdaily.dart';
-import 'package:spendify/service/parentdata.dart';
+import 'package:spendify/service/childData.dart';
 
 class ChildHomePage extends StatefulWidget {
   const ChildHomePage({super.key});
@@ -41,7 +41,7 @@ class _ChildHomePageState extends State<ChildHomePage> {
       double total = 0;
       double exp = 0;
       double inc = 0;
-      final String familyId = await DataService.getData();
+      final String familyId = await ChildDataService.getData();
       int year = _selectedDate.year.toInt();
       int month = _selectedDate.month.toInt();
       final startDate = DateTime(year, month, 1);
@@ -102,7 +102,7 @@ class _ChildHomePageState extends State<ChildHomePage> {
       double total = 0;
       double exp = 0;
       double inc = 0;
-      final String familyId = await DataService.getData();
+      final String familyId = await ChildDataService.getData();
       DateTime selectedStartOfWeek =
           _selectedDate.subtract(Duration(days: _selectedDate.weekday - 1));
       DateTime selectedEndOfWeek = selectedStartOfWeek.add(Duration(days: 6));
@@ -160,7 +160,7 @@ class _ChildHomePageState extends State<ChildHomePage> {
       double total = 0;
       double exp = 0;
       double inc = 0;
-      final String familyId = await DataService.getData();
+      final String familyId = await ChildDataService.getData();
       final String selectedDateString =
           DateFormat('yyyy-MM-dd').format(_selectedDate);
       List<Map<String, dynamic>> daily = [];

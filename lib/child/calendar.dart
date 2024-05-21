@@ -2,7 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:spendify/service/parentdata.dart';
+import 'package:spendify/service/childData.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:intl/intl.dart';
 
@@ -42,7 +42,7 @@ class _ChildCalendarState extends State<ChildCalendar> {
 
         // Start fetching data
         fetchData() async {
-          final String familyId = await DataService.getData();
+          final String familyId = await ChildDataService.getData();
           QuerySnapshot dailySnapshot = await FirebaseFirestore.instance
               .collection('daily')
               .where('family', isEqualTo: familyId)

@@ -5,8 +5,7 @@ import 'package:pie_chart/pie_chart.dart';
 import 'package:spendify/calendar.dart';
 import 'package:spendify/chart_expense.dart';
 import 'package:spendify/chart_income.dart';
-import 'package:spendify/service/parentdata.dart';
-import 'package:spendify/service/userData.dart';
+import 'package:spendify/service/childData.dart';
 
 class ChildAnalysis extends StatefulWidget {
   const ChildAnalysis({super.key});
@@ -45,7 +44,7 @@ class _ChildAnalysisState extends State<ChildAnalysis> {
     final String endDateString =
         dateFormat.format(endDate.add(const Duration(days: 1)));
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    final String familyId = await DataService.getData();
+    final String familyId = await ChildDataService.getData();
     QuerySnapshot dailySnapshot = await firestore
         .collection('daily')
         .where('user_id', isEqualTo: familyId)
@@ -100,7 +99,7 @@ class _ChildAnalysisState extends State<ChildAnalysis> {
           _selectedDate.subtract(Duration(days: _selectedDate.weekday - 1));
       DateTime selectedEndOfWeek = selectedStartOfWeek.add(Duration(days: 6));
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    final String familyId = await DataService.getData();
+    final String familyId = await ChildDataService.getData();
     QuerySnapshot dailySnapshot = await firestore
         .collection('daily')
         .where('family', isEqualTo: familyId)
@@ -155,7 +154,7 @@ Future<void> getDay() async {
     final String selectedDateString =
           DateFormat('yyyy-MM-dd').format(_selectedDate);
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    final String familyId = await UserDataService.getData();
+    final String familyId = await ChildDataService.getData();
     QuerySnapshot dailySnapshot = await firestore
         .collection('daily')
         .where('family', isEqualTo: familyId)

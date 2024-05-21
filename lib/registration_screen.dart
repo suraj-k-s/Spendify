@@ -120,7 +120,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         'phone': _phoneController.text,
         'gender': _selectedGender,
         'password': _passController.text,
-        'parent_id': widget.refId,
+        'family': widget.refId,
       });
 
       await _uploadImage(userId);

@@ -10,7 +10,7 @@ import 'package:math_expressions/math_expressions.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:spendify/child/dashboard_screen.dart';
-import 'package:spendify/service/parentdata.dart';
+import 'package:spendify/service/childData.dart';
 
 class ChildCalculator extends StatefulWidget {
   final String note = '';
@@ -103,7 +103,7 @@ class _ChildCalculatorState extends State<ChildCalculator> {
       DateTime now = DateTime.now();
       DateTime firstDayOfMonth = DateTime(now.year, now.month, 1);
       DateTime lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
-      final familyId = await DataService.getData();
+      final familyId = await ChildDataService.getData();
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection('daily')
           .where('family', isEqualTo: familyId)
@@ -187,7 +187,7 @@ class _ChildCalculatorState extends State<ChildCalculator> {
     String formattedDate = DateFormat('yyyy-MM-dd').format(_selectedDate);
     String formattedTime = '${_selectedTime.hour}:${_selectedTime.minute}';
     try {
-      final userId = await DataService.getData();
+      final userId = await ChildDataService.getData();
       DocumentReference newDocumentRef =
           await _firestore.collection('daily').add({
         'family': userId,
