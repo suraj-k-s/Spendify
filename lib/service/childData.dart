@@ -11,7 +11,7 @@ class ChildDataService {
       final userId = user?.uid;
       DocumentSnapshot<Map<String, dynamic>> userSnap = await FirebaseFirestore
           .instance
-          .collection('users')
+          .collection('child')
           .doc(userId)
           .get();
       if (userSnap.exists) {
