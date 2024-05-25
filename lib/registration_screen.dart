@@ -254,7 +254,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         Text(
                           widget.refId == ''
                               ? 'Parent Registration'
-                              : 'Child Registration',
+                              : widget.parent ? 'Parent Registration' : 'Child Registrations',
                           textAlign: TextAlign.left,
                           style: const TextStyle(
                             fontSize: 28,

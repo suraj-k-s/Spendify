@@ -18,13 +18,17 @@ class _QRResultState extends State<QRResult> {
   bool attendanceRegistered = false;
   String userId = '';
   String userName = '';
-  bool isLoading = true; // Add a flag for loading state
+  bool isLoading = true; 
+  bool parent = false; 
 
   @override
   void initState() {
     super.initState();
     setState(() {
       userId = widget.qrData['id'];
+      if(widget.qrData['type']=='PARENT'){
+        parent = true;
+      }
       fetchUserName(userId);
     });
   }
@@ -75,11 +79,12 @@ class _QRResultState extends State<QRResult> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => RegistrationScreen(
+                              parent: parent,
                               refId: userId,
                             ),
                           ));
                     },
-                    child: const Text('Register as Child'),
+                    child: parent ? const Text('Register as Parent') : const Text('Register as Child'),
                   ),
                 ],
               ),

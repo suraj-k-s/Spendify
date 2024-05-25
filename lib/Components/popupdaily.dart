@@ -55,6 +55,11 @@ class PopupDaily extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print("TIme: $time");
+    print("Date: $date");
+    String formattedTime = DateFormat('hh:mma').format(time);
+    String formattedDate = DateFormat('MMMM dd, yyyy').format(date);
+    print("Formatted TIme: $formattedTime");
     return AlertDialog(
       content: SingleChildScrollView(
         child: ListBody(
@@ -96,7 +101,7 @@ class PopupDaily extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              DateFormat('MMMM dd, yyyy hh:mm a').format(date),
+              "$formattedDate | $formattedTime",
               textAlign: TextAlign.right,
             ),
             const SizedBox(height: 10),
