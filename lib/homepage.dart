@@ -434,22 +434,6 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                   Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const SizedBox(
-                        width: 50,
-                      ),
-                      const Text(
-                        "GOAL",
-                        style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
-                      ),
-                      Text(
-                        totalGoal.toString(),
-                        style: const TextStyle(color: Colors.black),
-                      ),
-                    ],
-                  ),
-                  Column(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       const Text(
