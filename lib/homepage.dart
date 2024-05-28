@@ -18,6 +18,7 @@ class _HomePageState extends State<HomePage> {
   double totalAmt = 0.0;
   double totalExpenses = 0.0;
   double totalIncome = 0.0;
+  double totalGoal = 0.0;
   DateTime? _previousDate;
   final DateFormat dateFormat = DateFormat('yyyy-MM-dd');
   List<Map<String, dynamic>> dailyData = [];
@@ -33,6 +34,7 @@ class _HomePageState extends State<HomePage> {
       double total = 0;
       double exp = 0;
       double inc = 0;
+      double goal = 0;
       final String familyId = await UserDataService.getData();
       int year = _selectedDate.year.toInt();
       int month = _selectedDate.month.toInt();
@@ -72,17 +74,21 @@ class _HomePageState extends State<HomePage> {
           } else if (catdata?['type'] == 'expense') {
             exp += amt;
           }
+          else{
+            goal += amt;
+          }
         }
         if (data['type'] != 'goals') {
           daily.add(data);
         }
       }
-      total = inc - exp;
+      total = inc - exp - goal;
       setState(() {
         dailyData = daily;
         totalAmt = total;
         totalExpenses = exp;
         totalIncome = inc;
+        totalGoal = goal;
       });
     } catch (e) {
       print("Error Daily: $e");
@@ -94,6 +100,7 @@ class _HomePageState extends State<HomePage> {
       double total = 0;
       double exp = 0;
       double inc = 0;
+      double goal = 0;
       final String familyId = await UserDataService.getData();
       List<Map<String, dynamic>> weekly = [];
 
@@ -135,17 +142,21 @@ class _HomePageState extends State<HomePage> {
           } else if (catdata?['type'] == 'expense') {
             exp += amt;
           }
+          else{
+            goal += amt;
+          }
         }
         if (data['type'] != 'goals') {
           weekly.add(data);
         }
       }
-      total = inc - exp;
+      total = inc - exp - goal;
       setState(() {
         dailyData = weekly;
         totalAmt = total;
         totalExpenses = exp;
         totalIncome = inc;
+        totalGoal = goal;
       });
     } catch (e) {
       print("Error Weekly: $e");
@@ -157,6 +168,7 @@ class _HomePageState extends State<HomePage> {
       double total = 0;
       double exp = 0;
       double inc = 0;
+      double goal = 0;
       final String familyId = await UserDataService.getData();
       List<Map<String, dynamic>> daily = [];
 
@@ -193,17 +205,21 @@ class _HomePageState extends State<HomePage> {
           } else if (catdata?['type'] == 'expense') {
             exp += amt;
           }
+          else{
+            goal += amt;
+          }
         }
         if (data['type'] != 'goals') {
           daily.add(data);
         }
       }
-      total = inc - exp;
+      total = inc - exp - goal;
       setState(() {
         dailyData = daily;
         totalAmt = total;
         totalExpenses = exp;
         totalIncome = inc;
+        totalGoal = goal;
       });
     } catch (e) {
       print("Error Daily: $e");
@@ -413,6 +429,22 @@ class _HomePageState extends State<HomePage> {
                       ),
                       Text(
                         totalIncome.toString(),
+                        style: const TextStyle(color: Colors.black),
+                      ),
+                    ],
+                  ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(
+                        width: 50,
+                      ),
+                      const Text(
+                        "GOAL",
+                        style: TextStyle(color: Color.fromARGB(255, 67, 1, 49)),
+                      ),
+                      Text(
+                        totalGoal.toString(),
                         style: const TextStyle(color: Colors.black),
                       ),
                     ],
