@@ -44,50 +44,43 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _checkKeepLoggedInStatus() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool keepLoggedIn = prefs.getBool('keepLoggedIn') ?? false;
+    String? type = prefs.getString('type');
 
     if (keepLoggedIn) {
-      String userId = prefs.getString('parentId') ?? '';
-      if (userId.isNotEmpty) {
-        DocumentSnapshot userDoc =
-            await _firestore.collection('users').doc(userId).get();
-        if (userDoc.exists) {
-          Map<String, dynamic>? data = userDoc.data() as Map<String, dynamic>?;
-          if (data != null && data.containsKey('parentId')) {
-            print('Parent parentId: ${data['parentId']}');
+      String familyId = prefs.getString('family') ?? '';
+      if (familyId.isNotEmpty) {
+        if (type == 'parent') {
+          QuerySnapshot userQuerySnapshot = await _firestore
+              .collection('users')
+              .where('family', isEqualTo: familyId)
+              .get();
+
+          if (userQuerySnapshot.docs.isNotEmpty) {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const DashBoard()),
             );
           } else {
-            print('Parent document does not contain parentId.');
+            print("No user found");
           }
         } else {
-          DocumentSnapshot childDoc =
-              await _firestore.collection('child').doc(userId).get();
-          if (childDoc.exists) {
-            Map<String, dynamic>? data =
-                childDoc.data() as Map<String, dynamic>?;
-            if (data != null && data.containsKey('parentId')) {
-              print('Child parentId: ${data['parentId']}');
-            } else {
-              print('Child document does not contain parentId.');
-            }
+          QuerySnapshot userQuerySnapshot = await _firestore
+              .collection('child')
+              .where('family', isEqualTo: familyId)
+              .get();
+
+          if (userQuerySnapshot.docs.isNotEmpty) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const ChildDashBoard()),
+            );
           } else {
-            print(
-                'No document found with this userId in users or child collection.');
+            print("No child found");
           }
         }
-        //redirectPage();
       }
     }
   }
-
-  // void redirectPage() {
-  //   Navigator.pushReplacement(
-  //     context,
-  //     MaterialPageRoute(builder: (context) => const DashBoard()),
-  //   );
-  // }
 
   Future<void> saveUserInfoToLocalDatabase(String userId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -95,24 +88,26 @@ class _LoginScreenState extends State<LoginScreen> {
         await _firestore.collection('users').doc(userId).get();
     if (userDoc.exists) {
       Map<String, dynamic>? data = userDoc.data() as Map<String, dynamic>?;
-      if (data != null && data.containsKey('parentId')) {
-        prefs.setString('parentId', data['parentId']);
-        print('Parent parentId: ${data['parentId']}');
+      if (data != null && data.containsKey('family')) {
+        prefs.setString('family', data['family']);
+        prefs.setString('type', 'parent');
+        print('Parent family: ${data['family']}');
       } else {
-        print('Parent document does not contain parentId.');
+        print('Parent document does not contain family.');
       }
     } else {
       DocumentSnapshot childDoc =
           await _firestore.collection('child').doc(userId).get();
       if (childDoc.exists) {
         Map<String, dynamic>? data = childDoc.data() as Map<String, dynamic>?;
-        if (data != null && data.containsKey('parentId')) {
-          prefs.setString('parentId', data['parentId']);
-          print('Child parentId: ${data['parentId']}');
+        if (data != null && data.containsKey('family')) {
+          prefs.setString('family', data['family']);
+          prefs.setString('type', 'child');
+          print('Child family: ${data['family']}');
           Navigator.pushReplacement(context,
               MaterialPageRoute(builder: (context) => const ChildDashBoard()));
         } else {
-          print('Child document does not contain parentId.');
+          print('Child document does not contain family.');
         }
       } else {
         print(
@@ -122,64 +117,72 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _login() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _loading = true;
-      });
-      try {
-        final UserCredential userCredential =
-            await _auth.signInWithEmailAndPassword(
-          email: _emailController.text.trim(),
-          password: _passController.text.trim(),
-        );
-        if (userCredential.user != null) {
-          final String userId = userCredential.user!.uid;
-          if (_isChecked) {
-            // Save user info to shared preferences
-            String userId = userCredential.user?.uid ?? '';
-            print('User ID: $userId');
-            await saveUserInfoToLocalDatabase(userId);
-            // Save login status
-            SharedPreferences prefs = await SharedPreferences.getInstance();
-            prefs.setBool('keepLoggedIn', true);
-          }
-          // SharedPreferences prefs = await SharedPreferences.getInstance();
-          // prefs.setBool('keepLoggedIn', _isChecked);
-          bool isUser = await isUserInUsersCollection(userId);
+  if (_formKey.currentState!.validate()) {
+    setState(() {
+      _loading = true;
+    });
+    
+    final BuildContext currentContext = context; // Save the current context
+    
+    try {
+      final UserCredential userCredential =
+          await _auth.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passController.text.trim(),
+      );
+      if (userCredential.user != null) {
+        final String userId = userCredential.user!.uid;
+        if (_isChecked) {
+          // Save user info to shared preferences
+          print('User ID: $userId');
+          await saveUserInfoToLocalDatabase(userId);
+          // Save login status
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          prefs.setBool('keepLoggedIn', true);
+        }
+        
+        bool isUser = await isUserInUsersCollection(userId);
+        if (mounted) {
           if (isUser) {
             Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const DashBoard(),
-                ));
+              currentContext,
+              MaterialPageRoute(
+                builder: (context) => const DashBoard(),
+              ),
+            );
           } else {
             Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const ChildDashBoard()));
+              currentContext,
+              MaterialPageRoute(
+                builder: (context) => const ChildDashBoard(),
+              ),
+            );
           }
         }
-      } catch (e) {
-        String errorMessage = 'Login failed';
+      }
+    } catch (e) {
+      String errorMessage = 'Login failed';
+      print("Login Error: $e");
+      if (e is FirebaseAuthException) {
+        errorMessage = e.code;
+      }
 
-        if (e is FirebaseAuthException) {
-          errorMessage = e.code;
-        }
-
-        Fluttertoast.showToast(
-          msg: errorMessage,
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-        );
-      } finally {
+      Fluttertoast.showToast(
+        msg: errorMessage,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+    } finally {
+      if (mounted) {
         setState(() {
           _loading = false;
         });
       }
     }
   }
+}
 
   Future<bool> isUserInUsersCollection(String userId) async {
     // Assuming Firestore is used
