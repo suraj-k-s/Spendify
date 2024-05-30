@@ -89,6 +89,7 @@ class _BudgetlimtState extends State<Budgetlimt> {
               const SizedBox(
                 height: 10,
               ),
+              remaining < 0 ? Text("Exceeds: ${(remaining * -1).toString()}"):
               Text("Remaining: ${remaining.toString()}"),
             ],
           ),

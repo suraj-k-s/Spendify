@@ -20,6 +20,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -45,23 +46,79 @@ class _LoginScreenState extends State<LoginScreen> {
     bool keepLoggedIn = prefs.getBool('keepLoggedIn') ?? false;
 
     if (keepLoggedIn) {
-      String userId = prefs.getString('uid') ?? '';
+      String userId = prefs.getString('parentId') ?? '';
       if (userId.isNotEmpty) {
-        redirectPage();
+        DocumentSnapshot userDoc =
+            await _firestore.collection('users').doc(userId).get();
+        if (userDoc.exists) {
+          Map<String, dynamic>? data = userDoc.data() as Map<String, dynamic>?;
+          if (data != null && data.containsKey('parentId')) {
+            print('Parent parentId: ${data['parentId']}');
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const DashBoard()),
+            );
+          } else {
+            print('Parent document does not contain parentId.');
+          }
+        } else {
+          DocumentSnapshot childDoc =
+              await _firestore.collection('child').doc(userId).get();
+          if (childDoc.exists) {
+            Map<String, dynamic>? data =
+                childDoc.data() as Map<String, dynamic>?;
+            if (data != null && data.containsKey('parentId')) {
+              print('Child parentId: ${data['parentId']}');
+            } else {
+              print('Child document does not contain parentId.');
+            }
+          } else {
+            print(
+                'No document found with this userId in users or child collection.');
+          }
+        }
+        //redirectPage();
       }
     }
   }
 
-  void redirectPage() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const DashBoard()),
-    );
-  }
+  // void redirectPage() {
+  //   Navigator.pushReplacement(
+  //     context,
+  //     MaterialPageRoute(builder: (context) => const DashBoard()),
+  //   );
+  // }
 
   Future<void> saveUserInfoToLocalDatabase(String userId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('uid', userId);
+    DocumentSnapshot userDoc =
+        await _firestore.collection('users').doc(userId).get();
+    if (userDoc.exists) {
+      Map<String, dynamic>? data = userDoc.data() as Map<String, dynamic>?;
+      if (data != null && data.containsKey('parentId')) {
+        prefs.setString('parentId', data['parentId']);
+        print('Parent parentId: ${data['parentId']}');
+      } else {
+        print('Parent document does not contain parentId.');
+      }
+    } else {
+      DocumentSnapshot childDoc =
+          await _firestore.collection('child').doc(userId).get();
+      if (childDoc.exists) {
+        Map<String, dynamic>? data = childDoc.data() as Map<String, dynamic>?;
+        if (data != null && data.containsKey('parentId')) {
+          prefs.setString('parentId', data['parentId']);
+          print('Child parentId: ${data['parentId']}');
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder: (context) => const ChildDashBoard()));
+        } else {
+          print('Child document does not contain parentId.');
+        }
+      } else {
+        print(
+            'No document found with this userId in users or child collection.');
+      }
+    }
   }
 
   Future<void> _login() async {
@@ -77,8 +134,17 @@ class _LoginScreenState extends State<LoginScreen> {
         );
         if (userCredential.user != null) {
           final String userId = userCredential.user!.uid;
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          prefs.setBool('keepLoggedIn', _isChecked);
+          if (_isChecked) {
+            // Save user info to shared preferences
+            String userId = userCredential.user?.uid ?? '';
+            print('User ID: $userId');
+            await saveUserInfoToLocalDatabase(userId);
+            // Save login status
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            prefs.setBool('keepLoggedIn', true);
+          }
+          // SharedPreferences prefs = await SharedPreferences.getInstance();
+          // prefs.setBool('keepLoggedIn', _isChecked);
           bool isUser = await isUserInUsersCollection(userId);
           if (isUser) {
             Navigator.pushReplacement(
