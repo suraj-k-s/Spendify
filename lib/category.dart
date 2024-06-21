@@ -169,10 +169,14 @@ class Categories extends StatelessWidget {
                                     Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => CategoryDialog(
+                                          builder: (BuildContext context) =>
+                                              CategoryDialog(
                                             title: "Edit",
                                             category: category['name'],
-                                            icon: category['icon'],
+                                            icon: category['icon'] != null
+                                                ? IconData(category['icon'],
+                                                    fontFamily: 'MaterialIcons')
+                                                : null,
                                             id: category['id'],
                                           ),
                                         ));
@@ -229,17 +233,21 @@ class Categories extends StatelessWidget {
                                 ],
                                 onSelected: (value) {
                                   if (value == 'edit') {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => CategoryDialog(
-                                            id: category['id'],
-                                            title: "Edit",
-                                            category: category['name'],
-                                            icon: category['icon'],
-                                            type: category['type'],
-                                          ),
-                                        ));
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return CategoryDialog(
+                                          id: category['id'],
+                                          title: "Edit",
+                                          category: category['name'],
+                                          icon: category['icon'] != null
+                                              ? IconData(category['icon'],
+                                                  fontFamily: 'MaterialIcons')
+                                              : null,
+                                          type: category['type'],
+                                        ); // Using the MyDialog widget
+                                      },
+                                    );
                                   } else if (value == 'delete') {
                                     deleteItem(category['id']);
                                   }
@@ -281,7 +289,7 @@ class Categories extends StatelessWidget {
                                 ),
                               ),
                               trailing: PopupMenuButton(
-                                itemBuilder: (context) => [
+                                itemBuilder: (BuildContext context) => [
                                   const PopupMenuItem(
                                     value: 'edit',
                                     child: Text('Edit'),
@@ -293,17 +301,21 @@ class Categories extends StatelessWidget {
                                 ],
                                 onSelected: (value) {
                                   if (value == 'edit') {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => CategoryDialog(
-                                            id: category['id'],
-                                            title: "Edit",
-                                            category: category['name'],
-                                            icon: category['icon'],
-                                            type: category['type'],
-                                          ),
-                                        ));
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return CategoryDialog(
+                                          id: category['id'],
+                                          title: "Edit",
+                                          category: category['name'],
+                                          icon: category['icon'] != null
+                                              ? IconData(category['icon'],
+                                                  fontFamily: 'MaterialIcons')
+                                              : null,
+                                          type: category['type'],
+                                        ); // Using the MyDialog widget
+                                      },
+                                    );
                                   } else if (value == 'delete') {
                                     deleteItem(category['id']);
                                   }

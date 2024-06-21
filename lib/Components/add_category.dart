@@ -1,7 +1,6 @@
 // ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously, avoid_print
 
 import 'dart:math';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -13,13 +12,15 @@ class CategoryDialog extends StatefulWidget {
   final String category;
   final IconData? icon;
   final String? id;
-  const CategoryDialog(
-      {super.key,
-      required this.title,
-      this.type = 'income',
-      this.category = '',
-      this.icon,
-      this.id = ''});
+
+  const CategoryDialog({
+    super.key,
+    required this.title,
+    this.type = 'income',
+    this.category = '',
+    this.icon,
+    this.id = '',
+  });
 
   @override
   _CategoryDialogState createState() => _CategoryDialogState();
@@ -30,15 +31,16 @@ class _CategoryDialogState extends State<CategoryDialog> {
   String? _type;
   IconData? _selectedIcon;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   @override
   void initState() {
     super.initState();
-    _selectedIcon = widget.icon;
     _type = widget.type;
+    _selectedIcon = widget.icon; // Set the initially selected icon
     _textEditingController.text = widget.category;
   }
 
-  void addcategory() {
+  void addCategory() {
     try {
       final user = FirebaseAuth.instance.currentUser;
       final userId = user?.uid;
@@ -48,7 +50,7 @@ class _CategoryDialogState extends State<CategoryDialog> {
         'type': _type,
         'icon': iconCodePoint,
         'name': categoryName,
-        'userId': userId
+        'userId': userId,
       });
       Navigator.of(context).pop();
     } catch (e) {
@@ -58,11 +60,19 @@ class _CategoryDialogState extends State<CategoryDialog> {
 
   Future<void> editCategory() async {
     try {
-      await _firestore.collection('categories').doc(widget.id).update({
+      Map<String, dynamic> updateData = {
         'type': _type,
-        'icon': _selectedIcon?.codePoint,
-        'name': _textEditingController.text
-      });
+        'name': _textEditingController.text,
+      };
+
+      if (_selectedIcon != null) {
+        updateData['icon'] = _selectedIcon?.codePoint;
+      }
+
+      await _firestore
+          .collection('categories')
+          .doc(widget.id)
+          .update(updateData);
       Navigator.of(context).pop();
     } catch (e) {
       print("Error: $e");
@@ -102,18 +112,17 @@ class _CategoryDialogState extends State<CategoryDialog> {
                         Text(
                           'INCOME',
                           style: TextStyle(
-                              letterSpacing: .7,
-                              fontSize: 16,
-                              color: _type != 'income'
-                                  ? const Color.fromARGB(255, 135, 135, 135)
-                                  : null),
+                            letterSpacing: .7,
+                            fontSize: 16,
+                            color: _type != 'income'
+                                ? const Color.fromARGB(255, 135, 135, 135)
+                                : null,
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(
-                    width: 5,
-                  ),
+                  const SizedBox(width: 5),
                   GestureDetector(
                     onTap: () {
                       setState(() {
@@ -130,18 +139,17 @@ class _CategoryDialogState extends State<CategoryDialog> {
                         Text(
                           'EXPENSE',
                           style: TextStyle(
-                              letterSpacing: .7,
-                              fontSize: 16,
-                              color: _type != 'expense'
-                                  ? const Color.fromARGB(255, 135, 135, 135)
-                                  : null),
+                            letterSpacing: .7,
+                            fontSize: 16,
+                            color: _type != 'expense'
+                                ? const Color.fromARGB(255, 135, 135, 135)
+                                : null,
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(
-                    width: 5,
-                  ),
+                  const SizedBox(width: 5),
                   GestureDetector(
                     onTap: () {
                       setState(() {
@@ -158,11 +166,12 @@ class _CategoryDialogState extends State<CategoryDialog> {
                         Text(
                           'GOAL',
                           style: TextStyle(
-                              letterSpacing: .7,
-                              fontSize: 16,
-                              color: _type != 'goals'
-                                  ? const Color.fromARGB(255, 135, 135, 135)
-                                  : null),
+                            letterSpacing: .7,
+                            fontSize: 16,
+                            color: _type != 'goals'
+                                ? const Color.fromARGB(255, 135, 135, 135)
+                                : null,
+                          ),
                         ),
                       ],
                     ),
@@ -193,23 +202,26 @@ class _CategoryDialogState extends State<CategoryDialog> {
                 height: 100,
                 child: GridView.builder(
                   scrollDirection: Axis.horizontal,
-                  shrinkWrap: true,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 12,
-                      crossAxisSpacing: 12),
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                  ),
                   itemCount: iconsList.length,
                   itemBuilder: (context, index) {
                     final random = Random();
                     final randomColor = Color.fromARGB(
                       255,
-                      (random.nextInt(64) +
-                          192), // Red value between 192 and 255
-                      (random.nextInt(64) +
-                          192), // Green value between 192 and 255
-                      (random.nextInt(64) +
-                          192), // Blue value between 192 and 255
+                      random.nextInt(64) + 192, // Red value between 192 and 255
+                      random.nextInt(64) +
+                          192, // Green value between 192 and 255
+                      random.nextInt(64) +
+                          192, // Blue value between 192 and 255
                     );
+                    Color iconColor = _selectedIcon == iconsList[index]
+                        ? Colors.blue
+                        : Colors.black;
+
                     return GestureDetector(
                       onTap: () {
                         setState(() {
@@ -218,14 +230,13 @@ class _CategoryDialogState extends State<CategoryDialog> {
                       },
                       child: Container(
                         decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(),
-                            color: randomColor),
+                          shape: BoxShape.circle,
+                          border: Border.all(),
+                          color: randomColor,
+                        ),
                         child: Icon(
                           iconsList[index],
-                          color: _selectedIcon == iconsList[index]
-                              ? Colors.blue
-                              : Colors.black,
+                          color: iconColor,
                         ),
                       ),
                     );
@@ -238,14 +249,14 @@ class _CategoryDialogState extends State<CategoryDialog> {
         actions: <Widget>[
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop(); // Close the dialog
+              Navigator.of(context).pop();
             },
             child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
               if (widget.id == "") {
-                addcategory();
+                addCategory();
               } else {
                 editCategory();
               }

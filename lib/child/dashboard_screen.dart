@@ -46,7 +46,6 @@ class _ChildDashBoardState extends State<ChildDashBoard> {
       appBar: AppBar(
         iconTheme: const IconThemeData(color: Colors.white),
         backgroundColor: const Color.fromARGB(255, 67, 1, 49),
-        actions: [IconButton(onPressed: () {}, icon: const Icon(Icons.search))],
         title: const Text(
           'Spendify',
           style: TextStyle(color: Colors.white),
