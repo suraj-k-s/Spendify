@@ -50,7 +50,7 @@ class _CategoryDialogState extends State<CategoryDialog> {
         'type': _type,
         'icon': iconCodePoint,
         'name': categoryName,
-        'userId': userId,
+        'family': userId,
       });
       Navigator.of(context).pop();
     } catch (e) {
